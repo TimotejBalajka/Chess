@@ -4,6 +4,7 @@ import { AsyncPipe, NgForOf, NgIf } from '@angular/common';
 import { MatList, MatListItem } from '@angular/material/list';
 import { MatCell, MatCellDef, MatColumnDef, MatHeaderCell, MatHeaderCellDef, MatHeaderRow, MatHeaderRowDef, MatRow, MatRowDef, MatTable, MatTableDataSource } from '@angular/material/table';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { AuthenticationService } from '../api-authorization/authentication.service';
 
 @Component({
   selector: 'app-dashboard',
@@ -30,9 +31,12 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 })
 export class DashboardComponent implements OnInit {
   private testService = inject(TestService);
+  private authService = inject(AuthenticationService);
   private destroyRef = inject(DestroyRef);
 
   dataSource: MatTableDataSource<string>;
+
+  isAdmin = this.authService.admin;
 
   ngOnInit(): void {
     this.testService.getNames()

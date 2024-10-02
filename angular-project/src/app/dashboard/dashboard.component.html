@@ -1,12 +1,21 @@
-<div>
-  <h2>Hello! You can only see this if you're logged in!</h2>
-  <table mat-table *ngIf="dataSource" [dataSource]="dataSource">
-    <ng-container matColumnDef="name">
-      <th mat-header-cell *matHeaderCellDef> Name </th>
-      <td mat-cell *matCellDef="let member"> {{ member }} </td>
+@if (isAdmin()) {
+  <div>
+    <h2>Hello! You can only see this if you're logged in as Admin!</h2>
+    @if (dataSource) {
+      <table mat-table [dataSource]="dataSource">
+        <ng-container matColumnDef="name">
+          <th mat-header-cell *matHeaderCellDef> Name </th>
+          <td mat-cell *matCellDef="let member"> {{ member }} </td>
 
-      <tr mat-header-row *matHeaderRowDef="['name',]"></tr>
-      <tr mat-row *matRowDef="let row; columns: ['name'];"></tr>
-    </ng-container>
-  </table>
-</div>
+          <tr mat-header-row *matHeaderRowDef="['name',]"></tr>
+          <tr mat-row *matRowDef="let row; columns: ['name'];"></tr>
+        </ng-container>
+      </table>
+    }
+  </div>
+} @else {
+  <div>
+    <h2>Hello! I am sorry, but you're not allowed to see this page. Only admins can see this page.</h2>
+  </div>
+}
+

@@ -13,7 +13,8 @@ import { authGuard } from './app/api-authorization/auth.guard';
 import { jwtInterceptor } from './app/api-authorization/jwt.interceptor';
 
 export function getBaseUrl() {
-  return 'https://localhost:7186/api';
+  // return 'https://localhost:7186/api';
+  return 'https://openlab.bsite.net/api';
 }
 
 export function tokenGetter() {
@@ -30,7 +31,7 @@ bootstrapApplication(AppComponent, {
       importProvidersFrom(BrowserModule, JwtModule.forRoot({
         config: {
           tokenGetter: tokenGetter,
-          allowedDomains: ['https://localhost:7189'],
+          allowedDomains: ['https://localhost:7186', 'https://openlab.bsite.net'],
           disallowedRoutes: [],
         },
       })),
