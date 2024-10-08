@@ -12,7 +12,7 @@ export class AuthenticationService {
   private jwtHelper = inject(JwtHelperService);
 
   authenticated = signal(this.isAuthenticated());
-  admin = signal(false);
+  admin = signal(this.isAdmin());
 
   constructor(@Inject('BASE_URL') private baseUrl: string) {  }
 
@@ -33,11 +33,11 @@ export class AuthenticationService {
     localStorage.setItem('token', token);
     localStorage.setItem('username', username);
     this.authenticated.set(true);
-    this.admin.set(this.isAdmin(token));
+    this.admin.set(this.isAdmin());
   }
 
-  private isAdmin(token: string): boolean {
-    const decodedToken = this.jwtHelper.decodeToken(token);
+  private isAdmin(): boolean {
+    const decodedToken = this.jwtHelper.decodeToken(localStorage.getItem('token'));
     return decodedToken['admin'] === 'true';
   }
 
