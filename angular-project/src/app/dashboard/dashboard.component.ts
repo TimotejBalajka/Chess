@@ -39,6 +39,7 @@ export class DashboardComponent implements OnInit {
   isAdmin = this.authService.admin;
 
   ngOnInit(): void {
+    console.log("Hello github actions!");
     this.testService.getNames()
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe(names => this.dataSource = new MatTableDataSource(names));
