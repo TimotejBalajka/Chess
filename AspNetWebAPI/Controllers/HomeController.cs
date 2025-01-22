@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AspNetCoreAPI.Controllers
 {
     [ApiController]
-    [Authorize]
+    [Authorize(Policy = "Admin")]
     [Route("[controller]")]
     public class HomeController : BaseController
     {

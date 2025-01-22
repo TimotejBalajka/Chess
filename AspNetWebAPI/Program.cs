@@ -34,9 +34,12 @@ builder.Services.AddAuthentication(options =>
     };
 });
 builder.Services.AddScoped<JwtHandler>();
-
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("Admin", policy => policy.RequireClaim("admin", "true"));
+});
 builder.Services.AddSwaggerGen();
 builder.Services.AddCors(options =>
 {
@@ -44,7 +47,7 @@ builder.Services.AddCors(options =>
         name: MyAllowSpecificOrigins,
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+            policy.WithOrigins("http://localhost:4200", "https://openlab-web-app.web.app").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
         });
 });
 

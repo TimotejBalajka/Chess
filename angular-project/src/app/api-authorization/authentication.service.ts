@@ -37,6 +37,10 @@ export class AuthenticationService {
   }
 
   private isAdmin(): boolean {
+    if (!localStorage.getItem('token')) {
+      return false;
+    }
+
     const decodedToken = this.jwtHelper.decodeToken(localStorage.getItem('token'));
     return decodedToken['admin'] === 'true';
   }
