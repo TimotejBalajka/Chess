@@ -6,3 +6,17 @@ div {
   margin: auto;
   width: 50%;
 }
+
+.padding-top-1 {
+  padding-top: 1rem;
+}
+
+.example-form {
+  min-width: 150px;
+  max-width: 500px;
+  width: 100%;
+}
+
+.example-full-width {
+  width: 100%;
+}

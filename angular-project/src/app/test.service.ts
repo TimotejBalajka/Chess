@@ -1,5 +1,6 @@
 import { inject, Inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpEvent } from '@angular/common/http';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -11,5 +12,15 @@ export class TestService {
 
   getNames() {
     return this.httpClient.get<string[]>(this.baseUrl + '/home');
+  }
+
+  uploadFile(fileToBeUploaded: File): Observable<HttpEvent<string>> {
+    const formData = new FormData();
+    formData.append('file', fileToBeUploaded);
+
+    return this.httpClient.post<string>(this.baseUrl + '/file', formData, {
+      reportProgress: true,
+      observe: 'events'
+    });
   }
 }

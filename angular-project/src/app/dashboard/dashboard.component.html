@@ -12,6 +12,18 @@
         </ng-container>
       </table>
     }
+
+    <div>
+      <input type="file" (change)="setSelectedFile($event)">
+      <button mat-raised-button (click)="uploadFile()">Upload</button>
+      @if (uploadProgress > 0) {
+        <mat-progress-bar class="padding-top-1" [value]="uploadProgress"></mat-progress-bar>
+      }
+
+      @if (uploadMessage) {
+        <p>{{ uploadMessage }}</p>
+      }
+    </div>
   </div>
 } @else {
   <div>
