@@ -34,6 +34,9 @@ builder.Services.AddAuthentication(options =>
     };
 });
 builder.Services.AddScoped<JwtHandler>();
+
+builder.Services.Configure<ReCaptchaSettings>(builder.Configuration.GetSection("ReCaptcha"));
+builder.Services.AddHttpClient();
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 builder.Services.AddAuthorization(options =>

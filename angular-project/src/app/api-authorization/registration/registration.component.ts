@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { AuthenticationService } from '../authentication.service';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatFormField, MatLabel } from '@angular/material/form-field';
@@ -8,6 +8,7 @@ import { MatButton, MatIconButton } from '@angular/material/button';
 import { HttpErrorResponse } from '@angular/common/http';
 import { equalValuesValidator, passwordStrengthValidator } from '../password-validators';
 import { Router } from '@angular/router';
+import { RecaptchaModule } from 'ng-recaptcha';
 
 @Component({
   selector: 'app-registration',
@@ -19,7 +20,8 @@ import { Router } from '@angular/router';
     MatInput,
     MatIcon,
     MatIconButton,
-    MatButton
+    MatButton,
+    RecaptchaModule
   ],
   templateUrl: './registration.component.html',
   styleUrl: './registration.component.css'
@@ -29,6 +31,8 @@ export class RegistrationComponent implements OnInit {
   private router = inject(Router);
 
   registerForm: FormGroup;
+  captchaToken = signal<string>(undefined);
+  siteKey = '6Le_yL8qAAAAAOKmiBD5O8Jh8bkZJYRXRnX70IVf';
 
   ngOnInit(): void {
     this.registerForm = new FormGroup({
@@ -40,7 +44,7 @@ export class RegistrationComponent implements OnInit {
 
   register() {
     if(this.registerForm.valid) {
-      this.authService.registerUser({...this.registerForm.value}).subscribe({
+      this.authService.registerUser({...this.registerForm.value, captchaToken: this.captchaToken()}).subscribe({
         next: () => {
           console.log('Registration successful!');
           this.router.navigate(['/']);
@@ -48,5 +52,9 @@ export class RegistrationComponent implements OnInit {
         error: (err: HttpErrorResponse) => console.log('Oops, something went wrong!', err)
       });
     }
+  }
+
+  onCaptchaResolved(token: string) {
+    this.captchaToken.set(token);
   }
 }

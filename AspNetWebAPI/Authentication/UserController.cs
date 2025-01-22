@@ -1,9 +1,14 @@
 ﻿using AspNetCoreAPI.Authentication.dto;
 using AspNetCoreAPI.Models;
 using AspNetCoreAPI.Registration.dto;
+using Azure.Core;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace AspNetCoreAPI.Registration
 {
@@ -13,16 +18,26 @@ namespace AspNetCoreAPI.Registration
     {
         private readonly UserManager<User> _userManager;
         private readonly JwtHandler _jwtHandler;
+        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ReCaptchaSettings _reCaptchaSettings;
 
-        public UserController(UserManager<User> userManager, JwtHandler jwtHandler)
+        public UserController(UserManager<User> userManager, JwtHandler jwtHandler, IHttpClientFactory httpClientFactory, IOptions<ReCaptchaSettings> reCaptchaOptions)
         {
             _userManager = userManager;
             _jwtHandler = jwtHandler;
+            _httpClientFactory = httpClientFactory;
+            _reCaptchaSettings = reCaptchaOptions.Value;
         }
 
         [HttpPost("register")]
         public async Task<IActionResult> RegisterUser([FromBody] UserRegistrationDto userRegistrationDto)
         {
+            var captchaValidationResponse = await ValidateCaptcha(userRegistrationDto.CaptchaToken);
+            if (captchaValidationResponse == null || !captchaValidationResponse.Success)
+            {
+                return BadRequest("Captcha validation failed.");
+            }
+
             if (userRegistrationDto == null || !ModelState.IsValid)
                 return BadRequest();
 
@@ -36,6 +51,16 @@ namespace AspNetCoreAPI.Registration
             }
             
             return StatusCode(201);
+        }
+
+        private async Task<CaptchaResponse> ValidateCaptcha(string captchaToken)
+        {
+            var client = _httpClientFactory.CreateClient();
+            var response = await client.PostAsync($"https://www.google.com/recaptcha/api/siteverify?secret={_reCaptchaSettings.SecretKey}&response={captchaToken}", null);
+
+            var jsonResponse = await response.Content.ReadAsStringAsync();
+            return JsonSerializer.Deserialize<CaptchaResponse>(jsonResponse);
+            
         }
 
         [HttpPost("add-claim")]
@@ -64,4 +89,11 @@ namespace AspNetCoreAPI.Registration
             return Ok(new UserLoginResponseDto { IsAuthSuccessful = true, Token = token, Username = user.UserName });
         }
     }
+}
+
+public class CaptchaResponse
+{
+    [JsonPropertyName("success")]
+    public bool Success { get; set; }
+    public string[] ErrorCodes { get; set; }
 }
