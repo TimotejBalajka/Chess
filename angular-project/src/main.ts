@@ -13,8 +13,8 @@ import { authGuard } from './app/api-authorization/auth.guard';
 import { jwtInterceptor } from './app/api-authorization/jwt.interceptor';
 
 export function getBaseUrl() {
-  // return 'https://localhost:7186/api';
-  return 'https://openlab.bsite.net/api';
+  return 'https://localhost:7186/api';
+  // return 'https://openlab.bsite.net/api';
 }
 
 export function tokenGetter() {
