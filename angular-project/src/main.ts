@@ -2,15 +2,12 @@ import { importProvidersFrom } from '@angular/core';
 import { AppComponent } from './app/app.component';
 import { BrowserModule, bootstrapApplication } from '@angular/platform-browser';
 import { provideRouter } from '@angular/router';
-import { RegistrationComponent } from './app/api-authorization/registration/registration.component';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
-import { LoginComponent } from './app/api-authorization/login/login.component';
 import { DashboardComponent } from './app/dashboard/dashboard.component';
 import { JwtModule } from '@auth0/angular-jwt';
-import { errorHandlerInterceptor } from './app/api-authorization/error-handler.interceptor';
-import { authGuard } from './app/api-authorization/auth.guard';
-import { jwtInterceptor } from './app/api-authorization/jwt.interceptor';
+
+
 
 export function getBaseUrl() {
   return 'https://localhost:7186/api';
@@ -36,11 +33,9 @@ bootstrapApplication(AppComponent, {
         },
       })),
       provideAnimations(),
-      provideHttpClient(withInterceptors([errorHandlerInterceptor, jwtInterceptor])),
+      provideHttpClient(withInterceptors([])),
       provideRouter([
-        { path: '', component: DashboardComponent, canActivate: [authGuard]},
-        { path: 'login', component: LoginComponent},
-        { path: 'register', component: RegistrationComponent}
+        { path: '', component: DashboardComponent},
       ])
     ]
 })

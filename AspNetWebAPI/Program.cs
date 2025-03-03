@@ -1,7 +1,6 @@
 //using Microsoft.AspNetCore.Identity;
 using AspNetCoreAPI.Data;
 using AspNetCoreAPI.Models;
-using AspNetCoreAPI.Registration;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -33,7 +32,6 @@ builder.Services.AddAuthentication(options =>
             .GetBytes(jwtSettings.GetSection("securityKey").Value))
     };
 });
-builder.Services.AddScoped<JwtHandler>();
 
 builder.Services.Configure<ReCaptchaSettings>(builder.Configuration.GetSection("ReCaptcha"));
 builder.Services.AddHttpClient();

@@ -1,22 +1,219 @@
-div {
-  h2 {
-    padding-top: 1rem;
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+  margin: 0;
+  background-color: #161512;
+  flex-direction: column;
+  padding: 20px;
+  box-sizing: border-box;
+}
+
+.chessBoard {
+  width: 90vw;
+  height: 90vw;
+  max-width: 600px;
+  max-height: 600px;
+  margin: 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  position: relative;
+  aspect-ratio: 1 / 1;
+}
+
+.square {
+  width: 12.5%;
+  height: 12.5%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  box-sizing: border-box;
+}
+
+.white {
+  background-color: #f0d9b5;
+}
+
+.black {
+  background-color: #b58863;
+}
+
+.coordinate {
+  height: auto;
+  display: flex;
+  bottom: 4%;
+  left: 4%;
+  position: absolute;
+  font-size: 12px;
+  font-weight: bold;
+  font-family: Verdana, Geneva, Tahoma, sans-serif;
+}
+
+.rank {
+  top: 4%;
+  right: 4%;
+  left: auto;
+}
+
+.whiteText {
+  color: #f0d9b5;
+}
+
+.blackText {
+  color: #b58863;
+}
+
+.piece {
+  width: 100%;
+  z-index: 1;
+  cursor: pointer;
+}
+
+  .piece img {
+    max-width: 100%;
+    width: 100%;
+    height: auto;
   }
 
-  margin: auto;
-  width: 50%;
+.promotion-modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: white;
+  border: 1px solid black;
+  padding: 20px;
+  z-index: 1000;
+  display: flex;
+  gap: 10px;
 }
 
-.padding-top-1 {
-  padding-top: 1rem;
+  .promotion-modal button {
+    padding: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    border-radius: 50px;
+    border: 0;
+    background-color: white;
+    box-shadow: rgb(0 0 0 / 5%) 0 0 8px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    font-size: 15px;
+    transition: all 0.5s ease;
+  }
+
+    .promotion-modal button:hover {
+      letter-spacing: 3px;
+      background-color: rgb(181, 136, 99);
+      color: hsl(0, 0%, 100%);
+      box-shadow: rgb(181 136 99) 0px 7px 29px 0px;
+    }
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-top: 20px;
 }
 
-.example-form {
-  min-width: 150px;
-  max-width: 500px;
-  width: 100%;
+.restart, .save, .load {
+  padding: 10px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+  border: 0;
+  background-color: white;
+  box-shadow: rgb(0 0 0 / 5%) 0 0 8px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-size: 14px;
+  transition: all 0.5s ease;
+  width: 200px;
+  text-align: center;
 }
 
-.example-full-width {
-  width: 100%;
+  .restart:hover, .save:hover, .load:hover {
+    letter-spacing: 3px;
+    background-color: rgb(181, 136, 99);
+    color: hsl(0, 0%, 100%);
+    box-shadow: rgb(181 136 99) 0px 7px 29px 0px;
+  }
+
+  .restart:active, .save:active, .load:active {
+    letter-spacing: 3px;
+    background-color: rgb(181, 136, 99);
+    color: hsl(0, 0%, 100%);
+    box-shadow: rgb(181 136 99) 0px 0px 0px 0px;
+    transform: translateY(5px);
+    transition: 100ms;
+  }
+
+.history-box {
+  width: 200px;
+  height: 300px;
+  overflow-y: auto;
+  border: 1px solid black;
+  padding: 10px;
+  background: #f9f9f9;
+  border-radius: 8px;
+  margin: 20px 0;
+  box-sizing: border-box;
+}
+
+#moveHistory p {
+  font-size: 14px;
+  padding: 5px;
+  margin: 5px 0;
+  border-radius: 5px;
+  background: #ffffff;
+  box-shadow: 0px 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+@media (min-width: 600px) {
+  body {
+    flex-direction: row;
+    align-items: flex-start;
+    padding-top: 15px;
+  }
+
+  .chessBoard {
+    width: 500px;
+    height: 500px;
+    margin-right: 20px;
+    margin-left: 10px;
+  }
+
+  .history-box {
+    width: 200px;
+    height: 500px;
+    margin: 0;
+  }
+
+  .button-container {
+    margin-top: 0;
+    margin-left: 20px;
+  }
+
+  .restart, .save, .load {
+    width: 220px;
+  }
+}
+
+@media (max-width: 600px) {
+  .coordinate {
+    font-size: 8px;
+  }
+
+  .restart, .save, .load {
+    width: 200px;
+    font-size: 12px;
+  }
+
+  .history-box {
+    width: 200px;
+    height: 300px;
+    margin: 20px 0;
+  }
 }

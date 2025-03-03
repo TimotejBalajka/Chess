@@ -1,0 +1,17 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\angular-project",
+    "\\angular-project\\src",
+    "\\angular-project\\src\\app",
+    "\\angular-project\\src\\app\\dashboard",
+    "\\angular-project\\src\\assets",
+    "\\AspNetWebAPI",
+    "\\AspNetWebAPI\\wwwroot",
+    "\\AspNetWebAPI\\wwwroot\\lib",
+    "\\AspNetWebAPI\\wwwroot\\lib\\jquery-validation",
+    "\\AspNetWebAPI\\wwwroot\\lib\\jquery-validation\\dist"
+  ],
+  "SelectedNode": "\\angular-project\\src\\app\\dashboard\\dashboard.component.ts",
+  "PreviewInSolutionExplorer": false
+}
