@@ -124,15 +124,44 @@ export class DashboardComponent implements OnInit {
 
     this.moveHistory.forEach((move, index) => {
       const moveText = document.createElement('p');
-      moveText.textContent = `${index + 1}. ${move.color} ${move.piece.split(' ')[1]} to ${move.end}` +
-        (move.captured ? ` (Captured ${move.captured.split(' ')[1]})` : '');
+
+      let colorTranslation: string;
+      if (move.color === 'white') {
+        colorTranslation = 'biely';
+      } else {
+        colorTranslation = 'čierny';
+      }
+
+      const pieceTranslation = this.translatePieceType(move.piece.split(' ')[1]);
+
+      moveText.textContent = `${index + 1}. ${colorTranslation} ${pieceTranslation} to ${move.end}` +
+        (move.captured ? ` (Zobratý ${this.translatePieceType(move.captured.split(' ')[1])})` : '');
       historyDiv.appendChild(moveText);
     });
 
     setTimeout(() => {
       historyDiv.scrollTop = historyDiv.scrollHeight;
     }, 0);
-  }
+    }
+
+    translatePieceType(pieceType: string): string {
+      switch (pieceType) {
+        case 'pawn':
+          return 'pešiak';
+        case 'rook':
+          return 'veža';
+        case 'knight':
+          return 'jazdec';
+        case 'bishop':
+          return 'strelec';
+        case 'queen':
+          return 'dáma';
+        case 'king':
+          return 'kráľ';
+        default:
+          return pieceType;
+      }
+    }
 
   resetBoard(): void {
     localStorage.removeItem('chessGameState');
