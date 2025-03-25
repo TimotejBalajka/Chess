@@ -6,6 +6,7 @@ import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimations } from '@angular/platform-browser/animations';
 import { DashboardComponent } from './app/dashboard/dashboard.component';
 import { JwtModule } from '@auth0/angular-jwt';
+import { VsPcComponent } from './app/vs-pc/vs-pc.component';
 
 
 
@@ -35,7 +36,8 @@ bootstrapApplication(AppComponent, {
       provideAnimations(),
       provideHttpClient(withInterceptors([])),
       provideRouter([
-        { path: '', component: DashboardComponent},
+        { path: '', component: DashboardComponent },
+        { path: 'VsPC', component: VsPcComponent },
       ])
     ]
 })
