@@ -6,11 +6,12 @@
     "\\angular-project\\src\\app",
     "\\angular-project\\src\\app\\vs-pc",
     "\\AspNetWebAPI",
+    "\\AspNetWebAPI\\Models",
     "\\AspNetWebAPI\\wwwroot",
     "\\AspNetWebAPI\\wwwroot\\lib",
     "\\AspNetWebAPI\\wwwroot\\lib\\jquery-validation",
     "\\AspNetWebAPI\\wwwroot\\lib\\jquery-validation\\dist"
   ],
-  "SelectedNode": "\\angular-project\\src\\app\\vs-pc\\chess.service.ts.service.ts",
+  "SelectedNode": "\\AspNetWebAPI\\AspNetWebAPI.sln",
   "PreviewInSolutionExplorer": false
 }

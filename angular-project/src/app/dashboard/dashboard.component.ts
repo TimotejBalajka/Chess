@@ -108,6 +108,11 @@ export class DashboardComponent implements OnInit {
     this.isWhiteTurn = !this.isWhiteTurn;
 
     const currentPlayerColor = this.isWhiteTurn ? 'white' : 'black';
+
+    document.querySelectorAll('.square').forEach(square => {
+      square.classList.remove('in-check');
+    });
+
     if (this.chessService.isCheckmate(currentPlayerColor)) {
       console.log(`Checkmate! ${currentPlayerColor === 'white' ? 'Black' : 'White'} wins!`);
       alert(`Checkmate! ${currentPlayerColor === 'white' ? 'Black' : 'White'} wins!`);
@@ -165,6 +170,11 @@ export class DashboardComponent implements OnInit {
 
   resetBoard(): void {
     localStorage.removeItem('chessGameState');
+
+    document.querySelectorAll('.square').forEach(square => {
+      square.classList.remove('in-check');
+    });
+
     this.boardSquares.forEach((square: any) => {
       square.innerHTML = '';
     });

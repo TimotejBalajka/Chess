@@ -137,6 +137,10 @@ export class ChessService {
     const opponentColor = color === 'white' ? 'black' : 'white';
     const kingSquare = this.findKing(color);
 
+    document.querySelectorAll('.square').forEach(square => {
+      square.classList.remove('in-check');
+    });
+
     for (const square of Array.from(document.getElementsByClassName('square'))) {
       const piece = square.querySelector('.piece');
       if (piece && piece.getAttribute('color') === opponentColor) {
@@ -148,6 +152,7 @@ export class ChessService {
         const endY = 8 - parseInt(kingSquare.id[1]);
 
         if (this.canAttack(piece, pieceType!, startX, startY, endX, endY)) {
+          kingSquare.classList.add('in-check');
           return true;
         }
       }
