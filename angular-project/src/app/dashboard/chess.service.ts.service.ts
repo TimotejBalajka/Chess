@@ -281,5 +281,65 @@ export class ChessService {
 
     return true;
   }
+
+  // Add these properties to your ChessService
+  private lightSquareHighlight = '#a9a9a9';
+  private darkSquareHighlight = '#696969';
+  private originalSquareColors: Map<string, string> = new Map();
+
+  // Add these methods to your ChessService
+  clearHighlights(): void {
+    const squares = document.querySelectorAll('.square');
+    squares.forEach(square => {
+      const squareElement = square as HTMLElement;
+      const originalColor = this.originalSquareColors.get(squareElement.id);
+
+      if (originalColor) {
+        squareElement.style.background = originalColor;
+      } else {
+        // Reset to default colors if no original color was stored
+        squareElement.style.background = '';
+      }
+    });
+    this.originalSquareColors.clear();
+  }
+
+  // Modify highlightSquare to store original colors
+  highlightSquare(square: HTMLElement): void {
+    const squareId = square.id;
+
+    // Only store the original color if we haven't already
+    if (!this.originalSquareColors.has(squareId)) {
+      const currentColor = square.style.background;
+      this.originalSquareColors.set(squareId, currentColor || '');
+    }
+
+    const isDark = square.classList.contains('black');
+    const highlightColor = isDark ? this.darkSquareHighlight : this.lightSquareHighlight;
+    square.style.background = highlightColor;
+  } 
+
+  getLegalMoves(piece: HTMLElement, square: HTMLElement): { x: number, y: number }[] {
+    const legalMoves: { x: number, y: number }[] = [];
+    const pieceType = piece.getAttribute('class')!.split(' ')[1];
+    const pieceColor = piece.getAttribute('color')!;
+    const startX = square.id.charCodeAt(0) - 97;
+    const startY = 8 - parseInt(square.id[1]);
+
+    // Check all possible squares
+    for (let x = 0; x < 8; x++) {
+      for (let y = 0; y < 8; y++) {
+        const endSquare = document.getElementById(String.fromCharCode(97 + x) + (8 - y));
+        if (endSquare) {
+          // Temporarily move the piece to check if the move is valid
+          if (this.isMoveValid(piece, square, endSquare)) {
+            legalMoves.push({ x, y });
+          }
+        }
+      }
+    }
+
+    return legalMoves;
+  }
 }
 

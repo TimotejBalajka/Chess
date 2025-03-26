@@ -1,11 +1,11 @@
 import { Component, OnInit, Renderer2, ElementRef } from '@angular/core';
 import { ChessService } from '../dashboard/chess.service.ts.service';
 
-  @Component({
-    selector: 'app-dashboard',
-    templateUrl: './dashboard.component.html',
-    styleUrl: './dashboard.component.css'
-  })
+@Component({
+  selector: 'app-dashboard',
+  templateUrl: './dashboard.component.html',
+  styleUrl: './dashboard.component.css'
+})
 export class DashboardComponent implements OnInit {
   legalSquares: any[] = [];
   isWhiteTurn: boolean = true;
@@ -13,6 +13,9 @@ export class DashboardComponent implements OnInit {
   pieces: any;
   piecesImages: any;
   moveHistory: any[] = [];
+
+  currentlyDragging = false;
+
 
   constructor(private renderer: Renderer2, private el: ElementRef, private chessService: ChessService) { }
 
@@ -46,20 +49,30 @@ export class DashboardComponent implements OnInit {
 
     this.pieces.forEach((piece: any) => {
       this.renderer.listen(piece, 'dragstart', (ev) => this.drag(ev));
+      this.renderer.listen(piece, 'mouseenter', (ev) => this.onPieceMouseEnter(ev.target, ev));
+      this.renderer.listen(piece, 'mouseleave', () => this.onPieceMouseLeave());
       this.renderer.setAttribute(piece, 'draggable', 'true');
       piece.id = piece.className.split(' ')[1] + piece.parentElement.id;
     });
 
     this.piecesImages.forEach((img: any) => {
       this.renderer.setAttribute(img, 'draggable', 'false');
+      // Add mouse events to images that bubble up to the piece
+      this.renderer.listen(img, 'mouseenter', (ev) => {
+        const piece = ev.target.parentElement;
+        this.onPieceMouseEnter(piece, ev);
+      });
+      this.renderer.listen(img, 'mouseleave', () => {
+        this.onPieceMouseLeave();
+      });
     });
   }
-
   allowDrop(ev: DragEvent): void {
     ev.preventDefault();
   }
 
   drag(ev: DragEvent): void {
+    this.currentlyDragging = true;
     const piece = ev.target as HTMLElement;
     const pieceColor = piece.getAttribute('color');
     if ((this.isWhiteTurn && pieceColor === 'white') || (!this.isWhiteTurn && pieceColor === 'black')) {
@@ -70,7 +83,10 @@ export class DashboardComponent implements OnInit {
   }
 
   drop(ev: DragEvent): void {
+    this.currentlyDragging = false;
     ev.preventDefault();
+    this.chessService.clearHighlights(); // Clear highlights when dropping
+
     const pieceId = ev.dataTransfer?.getData('text/plain');
     const piece = document.getElementById(pieceId!);
     const startSquare = document.getElementById(ev.dataTransfer?.getData('startSquare')!);
@@ -147,26 +163,26 @@ export class DashboardComponent implements OnInit {
     setTimeout(() => {
       historyDiv.scrollTop = historyDiv.scrollHeight;
     }, 0);
-    }
+  }
 
-    translatePieceType(pieceType: string): string {
-      switch (pieceType) {
-        case 'pawn':
-          return 'pešiak';
-        case 'rook':
-          return 'veža';
-        case 'knight':
-          return 'jazdec';
-        case 'bishop':
-          return 'strelec';
-        case 'queen':
-          return 'dáma';
-        case 'king':
-          return 'kráľ';
-        default:
-          return pieceType;
-      }
+  translatePieceType(pieceType: string): string {
+    switch (pieceType) {
+      case 'pawn':
+        return 'pešiak';
+      case 'rook':
+        return 'veža';
+      case 'knight':
+        return 'jazdec';
+      case 'bishop':
+        return 'strelec';
+      case 'queen':
+        return 'dáma';
+      case 'king':
+        return 'kráľ';
+      default:
+        return pieceType;
     }
+  }
 
   resetBoard(): void {
     localStorage.removeItem('chessGameState');
@@ -272,29 +288,58 @@ export class DashboardComponent implements OnInit {
     } else {
       console.log('No saved game found.');
     }
-    }
+  }
 
-    promotePawn(pawn: HTMLElement, color: string): void {
-      const modal = this.renderer.createElement('div');
-      this.renderer.addClass(modal, 'promotion-modal');
+  promotePawn(pawn: HTMLElement, color: string): void {
+    const modal = this.renderer.createElement('div');
+    this.renderer.addClass(modal, 'promotion-modal');
 
-      const options = ['Queen', 'Rook', 'Bishop', 'Knight'];
-      options.forEach((option) => {
-        const button = this.renderer.createElement('button');
-        button.textContent = option.charAt(0).toUpperCase() + option.slice(1);
-        this.renderer.listen(button, 'click', () => {
-          const newPieceImage = `assets/${color}${option}.png`;
-          const pawnImg = pawn.querySelector('img');
-          if (pawnImg) {
-            this.renderer.setAttribute(pawnImg, 'src', newPieceImage);
-          }
-          this.renderer.setAttribute(pawn, 'class', `piece ${option}`);
-          this.renderer.removeChild(document.body, modal);
-        });
-        this.renderer.appendChild(modal, button);
+    const options = ['Queen', 'Rook', 'Bishop', 'Knight'];
+    options.forEach((option) => {
+      const button = this.renderer.createElement('button');
+      button.textContent = option.charAt(0).toUpperCase() + option.slice(1);
+      this.renderer.listen(button, 'click', () => {
+        const newPieceImage = `assets/${color}${option}.png`;
+        const pawnImg = pawn.querySelector('img');
+        if (pawnImg) {
+          this.renderer.setAttribute(pawnImg, 'src', newPieceImage);
+        }
+        this.renderer.setAttribute(pawn, 'class', `piece ${option}`);
+        this.renderer.removeChild(document.body, modal);
       });
+      this.renderer.appendChild(modal, button);
+    });
 
-      this.renderer.appendChild(document.body, modal);
+    this.renderer.appendChild(document.body, modal);
+  }
+
+  // Update the mouse leave handler
+  onPieceMouseLeave(): void {
+    // Only clear highlights if not currently dragging
+    if (!this.currentlyDragging) {
+      this.chessService.clearHighlights();
     }
+  }
 
+  // Update the mouse enter handler
+  onPieceMouseEnter(piece: HTMLElement, event: MouseEvent): void {
+    if ((this.isWhiteTurn && piece.getAttribute('color') === 'white') ||
+      (!this.isWhiteTurn && piece.getAttribute('color') === 'black')) {
+      const square = piece.parentElement as HTMLElement;
+      this.chessService.clearHighlights();
+
+      // Highlight the current square
+      this.chessService.highlightSquare(square);
+
+      // Highlight all legal moves
+      const legalMoves = this.chessService.getLegalMoves(piece, square);
+      legalMoves.forEach(move => {
+        const squareId = String.fromCharCode(97 + move.x) + (8 - move.y);
+        const targetSquare = document.getElementById(squareId);
+        if (targetSquare) {
+          this.chessService.highlightSquare(targetSquare);
+        }
+      });
+    }
+  }
 }
