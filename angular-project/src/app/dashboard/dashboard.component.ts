@@ -44,29 +44,31 @@ export class DashboardComponent implements OnInit {
   }
 
   setupPieces(): void {
+    // Clear existing references
     this.pieces = this.el.nativeElement.querySelectorAll('.piece');
-    this.piecesImages = this.el.nativeElement.querySelectorAll('img');
+    this.piecesImages = this.el.nativeElement.querySelectorAll('.piece img');
 
+    // Set up new pieces
     this.pieces.forEach((piece: any) => {
-      this.renderer.listen(piece, 'dragstart', (ev) => this.drag(ev));
-      this.renderer.listen(piece, 'mouseenter', (ev) => this.onPieceMouseEnter(ev.target, ev));
-      this.renderer.listen(piece, 'mouseleave', () => this.onPieceMouseLeave());
-      this.renderer.setAttribute(piece, 'draggable', 'true');
-      piece.id = piece.className.split(' ')[1] + piece.parentElement.id;
+      // Clone to remove old event listeners
+      const newPiece = piece.cloneNode(true);
+      piece.parentNode.replaceChild(newPiece, piece);
+
+      // Set up new listeners
+      this.renderer.listen(newPiece, 'dragstart', (ev) => this.drag(ev));
+      this.renderer.listen(newPiece, 'mouseenter', (ev) => this.onPieceMouseEnter(ev.target, ev));
+      this.renderer.listen(newPiece, 'mouseleave', () => this.onPieceMouseLeave());
+      this.renderer.setAttribute(newPiece, 'draggable', 'true');
+      newPiece.id = newPiece.className.split(' ')[1] + newPiece.parentElement.id;
     });
 
+    // Set up images
     this.piecesImages.forEach((img: any) => {
       this.renderer.setAttribute(img, 'draggable', 'false');
-      // Add mouse events to images that bubble up to the piece
-      this.renderer.listen(img, 'mouseenter', (ev) => {
-        const piece = ev.target.parentElement;
-        this.onPieceMouseEnter(piece, ev);
-      });
-      this.renderer.listen(img, 'mouseleave', () => {
-        this.onPieceMouseLeave();
-      });
+      this.renderer.setStyle(img, 'pointer-events', 'none');
     });
   }
+
   allowDrop(ev: DragEvent): void {
     ev.preventDefault();
   }
@@ -74,13 +76,22 @@ export class DashboardComponent implements OnInit {
   drag(ev: DragEvent): void {
     this.currentlyDragging = true;
     const piece = ev.target as HTMLElement;
-    const pieceColor = piece.getAttribute('color');
+
+    // Handle case where img is dragged instead of piece div
+    const actualPiece = piece.classList.contains('piece') ? piece : piece.parentElement as HTMLElement;
+
+    const pieceColor = actualPiece.getAttribute('color');
     if ((this.isWhiteTurn && pieceColor === 'white') || (!this.isWhiteTurn && pieceColor === 'black')) {
-      ev.dataTransfer?.setData('text/plain', piece.id);
-      const startSquare = piece.parentElement.id;
-      ev.dataTransfer?.setData('startSquare', startSquare);
+      this.chessService.setDragImage(ev, actualPiece);
+      ev.dataTransfer?.setData('text/plain', actualPiece.id);
+      const startSquare = actualPiece.parentElement?.id;
+      if (startSquare) {
+        ev.dataTransfer?.setData('startSquare', startSquare);
+      }
     }
   }
+
+
 
   drop(ev: DragEvent): void {
     this.currentlyDragging = false;
@@ -185,16 +196,19 @@ export class DashboardComponent implements OnInit {
   }
 
   resetBoard(): void {
+    // Clear game state
     localStorage.removeItem('chessGameState');
 
-    document.querySelectorAll('.square').forEach(square => {
+    // Remove all pieces while preserving coordinates
+    this.boardSquares.forEach((square: any) => {
+      const piece = square.querySelector('.piece');
+      if (piece) {
+        square.removeChild(piece);
+      }
       square.classList.remove('in-check');
     });
 
-    this.boardSquares.forEach((square: any) => {
-      square.innerHTML = '';
-    });
-
+    // Create fresh pieces
     const initialSetup = {
       a1: 'whiteRook', a2: 'whitePawn', a7: 'blackPawn', a8: 'blackRook',
       b1: 'whiteKnight', b2: 'whitePawn', b7: 'blackPawn', b8: 'blackKnight',
@@ -208,25 +222,32 @@ export class DashboardComponent implements OnInit {
 
     for (const [squareId, piece] of Object.entries(initialSetup)) {
       const square = document.getElementById(squareId);
-      const pieceDiv = document.createElement('div');
-      pieceDiv.className = `piece ${piece.slice(5).toLowerCase()}`;
-      pieceDiv.setAttribute('color', piece.startsWith('white') ? 'white' : 'black');
-      pieceDiv.setAttribute('draggable', 'true');
+      if (square) {
+        const pieceDiv = document.createElement('div');
+        pieceDiv.className = `piece ${piece.slice(5).toLowerCase()}`;
+        pieceDiv.setAttribute('color', piece.startsWith('white') ? 'white' : 'black');
+        pieceDiv.setAttribute('draggable', 'true');
 
-      const pieceImg = document.createElement('img');
-      pieceImg.src = `assets/pieces/${piece}.png`;
-      pieceImg.setAttribute('draggable', 'false');
+        const pieceImg = document.createElement('img');
+        pieceImg.src = `assets/${piece}.png`;
+        pieceImg.setAttribute('draggable', 'false');
+        pieceImg.style.pointerEvents = 'none';
 
-      pieceDiv.appendChild(pieceImg);
-      square?.appendChild(pieceDiv);
+        pieceDiv.appendChild(pieceImg);
+        square.appendChild(pieceDiv);
+      }
     }
 
+    // Reset game state
     this.isWhiteTurn = true;
-    console.log('Board reset!');
-    this.setupBoardSquares();
-    this.setupPieces();
     this.moveHistory = [];
     this.updateMoveHistoryDisplay();
+
+    // Force Angular to recognize new elements
+    setTimeout(() => {
+      this.setupPieces();
+      this.setupBoardSquares();
+    }, 0);
   }
 
   saveGameState(): void {

@@ -4,14 +4,11 @@
     "\\angular-project",
     "\\angular-project\\src",
     "\\angular-project\\src\\app",
-    "\\angular-project\\src\\app\\vs-pc",
-    "\\AspNetWebAPI",
-    "\\AspNetWebAPI\\Models",
-    "\\AspNetWebAPI\\wwwroot",
-    "\\AspNetWebAPI\\wwwroot\\lib",
-    "\\AspNetWebAPI\\wwwroot\\lib\\jquery-validation",
-    "\\AspNetWebAPI\\wwwroot\\lib\\jquery-validation\\dist"
+    "\\angular-project\\src\\app\\dashboard",
+    "\\angular-project\\src\\assets",
+    "\\angular-project\\src\\assets\\Pieces",
+    "\\AspNetWebAPI"
   ],
-  "SelectedNode": "\\AspNetWebAPI\\AspNetWebAPI.sln",
+  "SelectedNode": "\\angular-project\\src\\app\\dashboard\\dashboard.component.ts",
   "PreviewInSolutionExplorer": false
 }

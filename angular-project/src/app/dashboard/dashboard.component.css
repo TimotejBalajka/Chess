@@ -30,6 +30,10 @@ body {
   align-items: center;
   position: relative;
   box-sizing: border-box;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
 }
 
 .white {
@@ -49,6 +53,8 @@ body {
   font-size: 12px;
   font-weight: bold;
   font-family: Verdana, Geneva, Tahoma, sans-serif;
+  pointer-events: none;
+  z-index: 1;
 }
 
 .rank {
@@ -66,16 +72,22 @@ body {
 }
 
 .piece {
-  width: 100%;
-  z-index: 1;
-  cursor: pointer;
+  position: relative;
+  z-index: 10;
+  width: 80%;
+  height: 80%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-  .piece img {
-    max-width: 100%;
-    width: 100%;
-    height: auto;
-  }
+.piece img {
+  pointer-events: none;
+  user-select: none;
+  -webkit-user-drag: none;
+  max-width: 100%;
+  max-height: 100%;
+}
 
 .promotion-modal {
   position: fixed;

@@ -341,5 +341,16 @@ export class ChessService {
 
     return legalMoves;
   }
+
+  // Add to ChessService
+  setDragImage(ev: DragEvent, piece: HTMLElement): void {
+    const img = piece.querySelector('img');
+    if (img) {
+      // Create a temporary drag image element
+      const dragImg = new Image();
+      dragImg.src = img.getAttribute('src') || '';
+      ev.dataTransfer?.setDragImage(dragImg, dragImg.width / 2, dragImg.height / 2);
+    }
+  }
 }
 
