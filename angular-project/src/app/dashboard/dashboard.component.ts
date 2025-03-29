@@ -44,41 +44,30 @@ export class DashboardComponent implements OnInit {
   }
 
   setupPieces(): void {
-    this.pieces?.forEach((piece: any) => {
-      const newPiece = piece.cloneNode(true);
-      piece.parentNode.replaceChild(newPiece, piece);
-    });
-
-    // Clear existing references
+    // First, clear existing references
     this.pieces = this.el.nativeElement.querySelectorAll('.piece');
-    this.piecesImages = this.el.nativeElement.querySelectorAll('.piece img');
 
-    // Set up new pieces
+    // Set up new pieces with fresh event listeners
     this.pieces.forEach((piece: any) => {
-      // Clone to remove old event listeners
+      // Remove any existing event listeners by cloning the element
       const newPiece = piece.cloneNode(true);
       piece.parentNode.replaceChild(newPiece, piece);
 
-      // Set up new listeners
+      // Set up new listeners on the fresh element
       this.renderer.listen(newPiece, 'dragstart', (ev) => this.drag(ev));
       this.renderer.listen(newPiece, 'mouseenter', (ev) => this.onPieceMouseEnter(ev.target, ev));
       this.renderer.listen(newPiece, 'mouseleave', () => this.onPieceMouseLeave());
       this.renderer.setAttribute(newPiece, 'draggable', 'true');
       newPiece.id = newPiece.className.split(' ')[1] + newPiece.parentElement.id;
-
-
-      if (!piece.id || !piece.parentElement?.id) {
-        piece.id = piece.className.split(' ')[1] + piece.parentElement?.id;
-      }
     });
 
-    // Set up images
+    // Set up images (prevent them from being draggable)
+    this.piecesImages = this.el.nativeElement.querySelectorAll('.piece img');
     this.piecesImages.forEach((img: any) => {
       this.renderer.setAttribute(img, 'draggable', 'false');
       this.renderer.setStyle(img, 'pointer-events', 'none');
     });
   }
-
   allowDrop(ev: DragEvent): void {
     ev.preventDefault();
   }
@@ -256,10 +245,9 @@ export class DashboardComponent implements OnInit {
     // Force Angular to recognize new elements
     setTimeout(() => {
       this.setupPieces();
-      this.setupBoardSquares();
+      this.setupBoardSquares(); // This will reattach all event listeners
     }, 0);
   }
-
   saveGameState(): void {
     const gameState = {
       pieces: [],
