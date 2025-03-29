@@ -279,23 +279,38 @@ export class DashboardComponent implements OnInit {
     if (savedGameState && savedMoveHistory) {
       const gameState = JSON.parse(savedGameState);
 
+      // First, remove only the pieces, not the entire square content
       this.boardSquares.forEach((square: any) => {
-        square.innerHTML = '';
+        const piece = square.querySelector('.piece');
+        if (piece) {
+          square.removeChild(piece);
+        }
       });
 
+      // Then recreate and place the pieces
       gameState.pieces.forEach((pieceInfo: any) => {
         const square = document.getElementById(pieceInfo.squareId);
-        const pieceDiv = document.createElement('div');
-        pieceDiv.className = `piece ${pieceInfo.type}`;
-        pieceDiv.setAttribute('color', pieceInfo.color);
-        pieceDiv.setAttribute('draggable', 'true');
+        if (square) {
+          const pieceDiv = document.createElement('div');
+          pieceDiv.className = `piece ${pieceInfo.type}`;
+          pieceDiv.setAttribute('color', pieceInfo.color);
+          pieceDiv.setAttribute('draggable', 'true');
+          pieceDiv.id = pieceInfo.id;
 
-        const pieceImg = document.createElement('img');
-        pieceImg.src = `assets/pieces/${pieceInfo.color}${pieceInfo.type.charAt(0).toUpperCase() + pieceInfo.type.slice(1)}.png`;
-        pieceImg.setAttribute('draggable', 'false');
+          const pieceImg = document.createElement('img');
+          pieceImg.src = `assets/${pieceInfo.color}${pieceInfo.type.charAt(0).toUpperCase() + pieceInfo.type.slice(1)}.png`;
+          pieceImg.setAttribute('draggable', 'false');
 
-        pieceDiv.appendChild(pieceImg);
-        square?.appendChild(pieceDiv);
+          pieceDiv.appendChild(pieceImg);
+
+          // Insert the piece before any coordinate elements
+          const firstCoordinate = square.querySelector('.coordinate');
+          if (firstCoordinate) {
+            square.insertBefore(pieceDiv, firstCoordinate);
+          } else {
+            square.appendChild(pieceDiv);
+          }
+        }
       });
 
       this.moveHistory = JSON.parse(savedMoveHistory);
@@ -303,12 +318,16 @@ export class DashboardComponent implements OnInit {
 
       this.isWhiteTurn = gameState.turn;
       console.log('Game loaded!');
-      this.setupPieces();
+
+      // Reinitialize pieces and board
+      setTimeout(() => {
+        this.setupPieces();
+        this.setupBoardSquares();
+      }, 0);
     } else {
       console.log('No saved game found.');
     }
   }
-
 promotePawn(pawn: HTMLElement, color: string): void {
   const modal = this.renderer.createElement('div');
   this.renderer.addClass(modal, 'promotion-modal');
