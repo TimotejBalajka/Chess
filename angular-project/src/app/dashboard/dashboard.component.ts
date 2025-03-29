@@ -44,6 +44,11 @@ export class DashboardComponent implements OnInit {
   }
 
   setupPieces(): void {
+    this.pieces?.forEach((piece: any) => {
+      const newPiece = piece.cloneNode(true);
+      piece.parentNode.replaceChild(newPiece, piece);
+    });
+
     // Clear existing references
     this.pieces = this.el.nativeElement.querySelectorAll('.piece');
     this.piecesImages = this.el.nativeElement.querySelectorAll('.piece img');
@@ -60,6 +65,11 @@ export class DashboardComponent implements OnInit {
       this.renderer.listen(newPiece, 'mouseleave', () => this.onPieceMouseLeave());
       this.renderer.setAttribute(newPiece, 'draggable', 'true');
       newPiece.id = newPiece.className.split(' ')[1] + newPiece.parentElement.id;
+
+
+      if (!piece.id || !piece.parentElement?.id) {
+        piece.id = piece.className.split(' ')[1] + piece.parentElement?.id;
+      }
     });
 
     // Set up images
@@ -311,27 +321,39 @@ export class DashboardComponent implements OnInit {
     }
   }
 
-  promotePawn(pawn: HTMLElement, color: string): void {
-    const modal = this.renderer.createElement('div');
-    this.renderer.addClass(modal, 'promotion-modal');
+promotePawn(pawn: HTMLElement, color: string): void {
+  const modal = this.renderer.createElement('div');
+  this.renderer.addClass(modal, 'promotion-modal');
 
-    const options = ['Queen', 'Rook', 'Bishop', 'Knight'];
-    options.forEach((option) => {
-      const button = this.renderer.createElement('button');
-      button.textContent = option.charAt(0).toUpperCase() + option.slice(1);
-      this.renderer.listen(button, 'click', () => {
-        const newPieceImage = `assets/${color}${option}.png`;
-        const pawnImg = pawn.querySelector('img');
-        if (pawnImg) {
-          this.renderer.setAttribute(pawnImg, 'src', newPieceImage);
-        }
-        this.renderer.setAttribute(pawn, 'class', `piece ${option}`);
-        this.renderer.removeChild(document.body, modal);
-      });
-      this.renderer.appendChild(modal, button);
+  const options = ['Queen', 'Rook', 'Bishop', 'Knight'];
+  options.forEach((option) => {
+    const button = this.renderer.createElement('button');
+    button.textContent = option.charAt(0).toUpperCase() + option.slice(1);
+    this.renderer.listen(button, 'click', () => {
+      const newPieceImage = `assets/${color}${option}.png`;
+      const pawnImg = pawn.querySelector('img');
+      if (pawnImg) {
+        this.renderer.setAttribute(pawnImg, 'src', newPieceImage);
+      }
+      
+      // Remove all existing classes and add new ones
+      this.renderer.setAttribute(pawn, 'class', `piece ${option.toLowerCase()}`);
+      pawn.setAttribute('color', color);
+      
+      // Update the piece ID
+      pawn.id = `${option.toLowerCase()}${pawn.parentElement?.id}`;
+      
+      // Reinitialize the piece
+      setTimeout(() => {
+        this.setupPieces(); // This will rebind all event listeners
+      }, 0);
+      
+      this.renderer.removeChild(document.body, modal);
     });
+    this.renderer.appendChild(modal, button);
+  });
 
-    this.renderer.appendChild(document.body, modal);
+  this.renderer.appendChild(document.body, modal);
   }
 
   // Update the mouse leave handler
