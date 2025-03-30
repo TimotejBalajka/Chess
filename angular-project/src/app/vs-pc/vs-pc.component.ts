@@ -15,6 +15,7 @@ export class VsPcComponent implements OnInit {
   pieces: any;
   piecesImages: any;
   moveHistory: any[] = [];
+  currentlyDragging = false;
 
   constructor(private renderer: Renderer2, private el: ElementRef, private chessService: ChessService, private StockfishService: StockfishService ) { }
 
@@ -44,16 +45,30 @@ export class VsPcComponent implements OnInit {
 
   setupPieces(): void {
     this.pieces = this.el.nativeElement.querySelectorAll('.piece');
-    this.piecesImages = this.el.nativeElement.querySelectorAll('img');
+    this.piecesImages = this.el.nativeElement.querySelectorAll('.piece img');
 
     this.pieces.forEach((piece: any) => {
-      this.renderer.listen(piece, 'dragstart', (ev) => this.drag(ev));
-      this.renderer.setAttribute(piece, 'draggable', 'true');
-      piece.id = piece.className.split(' ')[1] + piece.parentElement.id;
+      const newPiece = piece.cloneNode(true);
+      piece.parentNode.replaceChild(newPiece, piece);
+
+      this.renderer.listen(newPiece, 'dragstart', (ev) => this.drag(ev));
+      this.renderer.listen(newPiece, 'mouseenter', (ev) => this.onPieceMouseEnter(ev.target, ev));
+      this.renderer.listen(newPiece, 'mouseleave', () => this.onPieceMouseLeave());
+      this.renderer.setAttribute(newPiece, 'draggable', 'true');
+      newPiece.id = newPiece.className.split(' ')[1] + newPiece.parentElement.id;
     });
 
     this.piecesImages.forEach((img: any) => {
       this.renderer.setAttribute(img, 'draggable', 'false');
+      // Add mouse events to images that bubble up to the piece
+      this.renderer.listen(img, 'mouseenter', (ev) => {
+        const piece = ev.target.parentElement;
+        this.onPieceMouseEnter(piece, ev);
+      });
+      this.renderer.listen(img, 'mouseleave', () => {
+        this.onPieceMouseLeave();
+      });
+      this.renderer.setStyle(img, 'pointer-events', 'none');
     });
   }
 
@@ -62,17 +77,25 @@ export class VsPcComponent implements OnInit {
   }
 
   drag(ev: DragEvent): void {
+    this.currentlyDragging = true;
     const piece = ev.target as HTMLElement;
-    const pieceColor = piece.getAttribute('color');
+    const actualPiece = piece.classList.contains('piece') ? piece : piece.parentElement as HTMLElement;
+    const pieceColor = actualPiece.getAttribute('color');
+
     if ((this.isWhiteTurn && pieceColor === 'white') || (!this.isWhiteTurn && pieceColor === 'black')) {
-      ev.dataTransfer?.setData('text/plain', piece.id);
-      const startSquare = piece.parentElement.id;
-      ev.dataTransfer?.setData('startSquare', startSquare);
+      this.chessService.setDragImage(ev, actualPiece);
+      ev.dataTransfer?.setData('text/plain', actualPiece.id);
+      const startSquare = actualPiece.parentElement?.id;
+      if (startSquare) {
+        ev.dataTransfer?.setData('startSquare', startSquare);
+      }
     }
   }
 
   drop(ev: DragEvent): void {
+    this.currentlyDragging = false;
     ev.preventDefault();
+    this.chessService.clearHighlights(); // Clear highlights when dropping
     const pieceId = ev.dataTransfer?.getData('text/plain');
     const piece = document.getElementById(pieceId!);
     const startSquare = document.getElementById(ev.dataTransfer?.getData('startSquare')!);
@@ -82,6 +105,10 @@ export class VsPcComponent implements OnInit {
       console.log('Invalid move');
       return;
     }
+
+    document.querySelectorAll('.square').forEach(square => {
+      square.classList.remove('in-check');
+    });
 
     this.executeMove(piece!, startSquare, endSquare);
 
@@ -266,8 +293,13 @@ export class VsPcComponent implements OnInit {
 
   resetBoard(): void {
     localStorage.removeItem('chessGameState');
+
     this.boardSquares.forEach((square: any) => {
-      square.innerHTML = '';
+      const piece = square.querySelector('.piece');
+      if (piece) {
+        square.removeChild(piece);
+      }
+      square.classList.remove('in-check');
     });
 
     const initialSetup = {
@@ -386,6 +418,35 @@ export class VsPcComponent implements OnInit {
     });
 
     this.renderer.appendChild(document.body, modal);
+  }
+
+  onPieceMouseLeave(): void {
+    // Only clear highlights if not currently dragging
+    if (!this.currentlyDragging) {
+      this.chessService.clearHighlights();
+    }
+  }
+
+  // Update the mouse enter handler
+  onPieceMouseEnter(piece: HTMLElement, event: MouseEvent): void {
+    if ((this.isWhiteTurn && piece.getAttribute('color') === 'white') ||
+      (!this.isWhiteTurn && piece.getAttribute('color') === 'black')) {
+      const square = piece.parentElement as HTMLElement;
+      this.chessService.clearHighlights();
+
+      // Highlight the current square
+      this.chessService.highlightSquare(square);
+
+      // Highlight all legal moves
+      const legalMoves = this.chessService.getLegalMoves(piece, square);
+      legalMoves.forEach(move => {
+        const squareId = String.fromCharCode(97 + move.x) + (8 - move.y);
+        const targetSquare = document.getElementById(squareId);
+        if (targetSquare) {
+          this.chessService.highlightSquare(targetSquare);
+        }
+      });
+    }
   }
 
   async getEngineMove(fen: string): Promise<any> {
