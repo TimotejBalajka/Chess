@@ -88,9 +88,6 @@ export class VsPcComponent implements OnInit {
     if (!this.isWhiteTurn) {
       this.makeBotMove();
     }
-
-    console.log(this.getCurrentFEN());
-    this.getEngineMove(this.getCurrentFEN());
   }
 
   executeMove(piece: HTMLElement, startSquare: HTMLElement, endSquare: HTMLElement): void {
@@ -131,18 +128,68 @@ export class VsPcComponent implements OnInit {
     }
   }
 
-  makeBotMove(): void {
+  async makeBotMove(): Promise<void> {
+    try {
+      const fen = this.getCurrentFEN();
+      console.log('Current FEN:', fen);
+
+      const response = await this.StockfishService.getBestMove(fen).toPromise() as any;
+
+      if (!response || typeof response !== 'object') {
+        throw new Error('Invalid engine response');
+      }
+
+      const bestMoveString = response?.bestmove;
+      if (!bestMoveString || typeof bestMoveString !== 'string') {
+        throw new Error('No bestmove in response');
+      }
+
+      const moveParts = bestMoveString.split(' ');
+      const moveString = moveParts.length >= 2 ? moveParts[1] : null;
+
+      if (!moveString || moveString.length < 4) {
+        throw new Error(`Invalid move format: ${moveString}`);
+      }
+
+      const fromSquare = moveString.substring(0, 2);
+      const toSquare = moveString.substring(2, 4);
+
+      const startSquare = document.getElementById(fromSquare);
+      const endSquare = document.getElementById(toSquare);
+
+      if (!startSquare || !endSquare) {
+        throw new Error(`Couldn't find squares ${fromSquare} or ${toSquare}`);
+      }
+
+      const piece = startSquare.querySelector('.piece') as HTMLElement;
+      if (!piece) {
+        throw new Error(`No piece found on ${fromSquare}`);
+      }
+
+      if (!this.chessService.isMoveValid(piece, startSquare, endSquare)) {
+        throw new Error('Engine suggested invalid move');
+      }
+
+      setTimeout(() => {
+        this.executeMove(piece, startSquare, endSquare);
+      }, 500);
+
+    } catch (error) {
+      console.error('Error in bot move:', error);
+      this.makeRandomBotMove();
+    }
+  }
+
+  makeRandomBotMove(): void {
     const botMove = this.chessService.getRandomValidMove('black');
     if (botMove) {
       setTimeout(() => {
         this.executeMove(botMove.piece, botMove.startSquare, botMove.endSquare);
-      }, 500); // Add a delay to make the bot's move visible
+      }, 500);
     }
   }
 
   getCurrentFEN(): string {
-    // Implement a method to generate the FEN string for the current board state
-    // This is a simplified example; you may need to handle castling, en passant, etc.
     let fen = '';
     for (let row = 0; row < 8; row++) {
       let emptySquares = 0;
@@ -168,7 +215,7 @@ export class VsPcComponent implements OnInit {
         fen += '/';
       }
     }
-    fen += ` ${this.isWhiteTurn ? 'w' : 'b'} - - 0 1`; // Add turn, castling, en passant, etc.
+    fen += ` ${this.isWhiteTurn ? 'w' : 'b'} - - 0 1`;
     return fen;
   }
 
@@ -341,14 +388,20 @@ export class VsPcComponent implements OnInit {
     this.renderer.appendChild(document.body, modal);
   }
 
-  async getEngineMove(fen: string): Promise<string | null> {
+  async getEngineMove(fen: string): Promise<any> {
     try {
-      const response: any = await this.StockfishService.getBestMove(fen).toPromise();
-      console.log(response)
-      return response?.data?.bestmove || null;
+      return await this.StockfishService.getBestMove(fen).toPromise();
     } catch (error) {
       console.error('Error getting engine move:', error);
       return null;
     }
   }
+}
+
+interface StockfishResponse {
+  success: boolean;
+  evaluation?: number;
+  mate?: number | null;
+  bestmove?: string;
+  continuation?: string;
 }

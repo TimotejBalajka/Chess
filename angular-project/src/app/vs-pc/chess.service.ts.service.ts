@@ -170,11 +170,11 @@ export class ChessService {
       case 'piece pawn':
         const direction = piece.getAttribute('color') === 'white' ? -1 : 1;
         const targetSquare = document.getElementById(String.fromCharCode(97 + endX) + (8 - endY));
-        if (!targetSquare) return false; // Ensure the target square exists
+        if (!targetSquare) return false;
         return (
           Math.abs(endX - startX) === 1 &&
           endY === startY + direction &&
-          this.isSquareOccupied(targetSquare) !== piece.getAttribute('color') // Compare strings correctly
+          this.isSquareOccupied(targetSquare) !== piece.getAttribute('color')
         );
       case 'piece rook':
         return startX === endX || startY === endY ? this.isRookPathClear(startX, startY, endX, endY) : false;
@@ -284,7 +284,6 @@ export class ChessService {
       .map(square => square.querySelector('.piece') as HTMLElement)
       .filter(piece => piece && piece.getAttribute('color') === color);
 
-    // Collect all valid moves for all pieces
     const allValidMoves: { piece: HTMLElement, startSquare: HTMLElement, endSquare: HTMLElement }[] = [];
 
     for (const piece of pieces) {
@@ -296,13 +295,12 @@ export class ChessService {
       });
     }
 
-    // If there are valid moves, randomly select one
     if (allValidMoves.length > 0) {
-      const randomIndex = Math.floor(Math.random() * allValidMoves.length); // Use a better RNG if needed
+      const randomIndex = Math.floor(Math.random() * allValidMoves.length);
       return allValidMoves[randomIndex];
     }
 
-    return null; // No valid moves found
+    return null;
   }
 
  getRandomInt(min: number, max: number): number {
