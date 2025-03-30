@@ -1,5 +1,7 @@
-import { Component, OnInit, Renderer2, ElementRef } from '@angular/core';
+import { Component, OnInit, Renderer2, ElementRef, importProvidersFrom } from '@angular/core';
 import { ChessService } from '../vs-pc/chess.service.ts.service';
+import { StockfishService } from "../vs-pc/stockfish.service";
+
 
 @Component({
   selector: 'app-vs-pc',
@@ -14,7 +16,7 @@ export class VsPcComponent implements OnInit {
   piecesImages: any;
   moveHistory: any[] = [];
 
-  constructor(private renderer: Renderer2, private el: ElementRef, private chessService: ChessService) { }
+  constructor(private renderer: Renderer2, private el: ElementRef, private chessService: ChessService, private StockfishService: StockfishService ) { }
 
   ngOnInit(): void {
     this.setupBoardSquares();
@@ -86,6 +88,9 @@ export class VsPcComponent implements OnInit {
     if (!this.isWhiteTurn) {
       this.makeBotMove();
     }
+
+    console.log(this.getCurrentFEN());
+    this.getEngineMove(this.getCurrentFEN());
   }
 
   executeMove(piece: HTMLElement, startSquare: HTMLElement, endSquare: HTMLElement): void {
@@ -133,6 +138,38 @@ export class VsPcComponent implements OnInit {
         this.executeMove(botMove.piece, botMove.startSquare, botMove.endSquare);
       }, 500); // Add a delay to make the bot's move visible
     }
+  }
+
+  getCurrentFEN(): string {
+    // Implement a method to generate the FEN string for the current board state
+    // This is a simplified example; you may need to handle castling, en passant, etc.
+    let fen = '';
+    for (let row = 0; row < 8; row++) {
+      let emptySquares = 0;
+      for (let col = 0; col < 8; col++) {
+        const square = document.getElementById(String.fromCharCode(97 + col) + (8 - row));
+        const piece = square?.querySelector('.piece');
+        if (piece) {
+          if (emptySquares > 0) {
+            fen += emptySquares;
+            emptySquares = 0;
+          }
+          const pieceType = piece.classList[1];
+          const pieceColor = piece.getAttribute('color');
+          fen += pieceColor === 'white' ? pieceType[0].toUpperCase() : pieceType[0].toLowerCase();
+        } else {
+          emptySquares++;
+        }
+      }
+      if (emptySquares > 0) {
+        fen += emptySquares;
+      }
+      if (row < 7) {
+        fen += '/';
+      }
+    }
+    fen += ` ${this.isWhiteTurn ? 'w' : 'b'} - - 0 1`; // Add turn, castling, en passant, etc.
+    return fen;
   }
 
   updateMoveHistoryDisplay(): void {
@@ -304,4 +341,14 @@ export class VsPcComponent implements OnInit {
     this.renderer.appendChild(document.body, modal);
   }
 
+  async getEngineMove(fen: string): Promise<string | null> {
+    try {
+      const response: any = await this.StockfishService.getBestMove(fen).toPromise();
+      console.log(response)
+      return response?.data?.bestmove || null;
+    } catch (error) {
+      console.error('Error getting engine move:', error);
+      return null;
+    }
+  }
 }
