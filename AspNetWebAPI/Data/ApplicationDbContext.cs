@@ -11,7 +11,7 @@ namespace AspNetCoreAPI.Data
             : base(options)
         {
         }
-        public DbSet<Class> classes { get; set; }
+        public DbSet<ChessOpening>? Classes { get; set; }
 
     }
 }

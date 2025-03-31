@@ -4,10 +4,11 @@
     "\\angular-project",
     "\\angular-project\\src",
     "\\angular-project\\src\\app",
+    "\\angular-project\\src\\app\\dashboard",
     "\\angular-project\\src\\app\\vs-pc",
     "\\angular-project\\src\\assets",
     "\\AspNetWebAPI"
   ],
-  "SelectedNode": "\\angular-project\\src\\app\\vs-pc\\vs-pc.component.spec.ts",
+  "SelectedNode": "\\AspNetWebAPI\\AspNetWebAPI.sln",
   "PreviewInSolutionExplorer": false
 }

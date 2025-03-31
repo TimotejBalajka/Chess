@@ -18,7 +18,7 @@ export class StockfishService {
 
   constructor(private http: HttpClient) { }
 
-  getBestMove(fen: string, depth: number = 2): Observable<StockfishResponse> {
+  getBestMove(fen: string, depth: number = 15): Observable<StockfishResponse> {
     return this.http.get<StockfishResponse>(this.apiUrl, {
       params: {
         fen,

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AspNetCoreAPI.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250325081316_ge")]
-    partial class ge
+    [Migration("20250331074415_string")]
+    partial class @string
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -25,7 +25,7 @@ namespace AspNetCoreAPI.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("AspNetCoreAPI.Models.Class", b =>
+            modelBuilder.Entity("AspNetCoreAPI.Models.ChessOpening", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -33,13 +33,15 @@ namespace AspNetCoreAPI.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("Chess_Opening")
-                        .IsRequired()
+                    b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("classes");
+                    b.ToTable("Classes");
                 });
 
             modelBuilder.Entity("AspNetCoreAPI.Models.User", b =>

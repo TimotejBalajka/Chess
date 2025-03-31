@@ -44,13 +44,16 @@ export class VsPcComponent implements OnInit {
   }
 
   setupPieces(): void {
+    // First, clear existing references
     this.pieces = this.el.nativeElement.querySelectorAll('.piece');
-    this.piecesImages = this.el.nativeElement.querySelectorAll('.piece img');
 
+    // Set up new pieces with fresh event listeners
     this.pieces.forEach((piece: any) => {
+      // Remove any existing event listeners by cloning the element
       const newPiece = piece.cloneNode(true);
       piece.parentNode.replaceChild(newPiece, piece);
 
+      // Set up new listeners on the fresh element
       this.renderer.listen(newPiece, 'dragstart', (ev) => this.drag(ev));
       this.renderer.listen(newPiece, 'mouseenter', (ev) => this.onPieceMouseEnter(ev.target, ev));
       this.renderer.listen(newPiece, 'mouseleave', () => this.onPieceMouseLeave());
@@ -58,16 +61,10 @@ export class VsPcComponent implements OnInit {
       newPiece.id = newPiece.className.split(' ')[1] + newPiece.parentElement.id;
     });
 
+    // Set up images (prevent them from being draggable)
+    this.piecesImages = this.el.nativeElement.querySelectorAll('.piece img');
     this.piecesImages.forEach((img: any) => {
       this.renderer.setAttribute(img, 'draggable', 'false');
-      // Add mouse events to images that bubble up to the piece
-      this.renderer.listen(img, 'mouseenter', (ev) => {
-        const piece = ev.target.parentElement;
-        this.onPieceMouseEnter(piece, ev);
-      });
-      this.renderer.listen(img, 'mouseleave', () => {
-        this.onPieceMouseLeave();
-      });
       this.renderer.setStyle(img, 'pointer-events', 'none');
     });
   }
@@ -79,9 +76,11 @@ export class VsPcComponent implements OnInit {
   drag(ev: DragEvent): void {
     this.currentlyDragging = true;
     const piece = ev.target as HTMLElement;
-    const actualPiece = piece.classList.contains('piece') ? piece : piece.parentElement as HTMLElement;
-    const pieceColor = actualPiece.getAttribute('color');
 
+    // Handle case where img is dragged instead of piece div
+    const actualPiece = piece.classList.contains('piece') ? piece : piece.parentElement as HTMLElement;
+
+    const pieceColor = actualPiece.getAttribute('color');
     if ((this.isWhiteTurn && pieceColor === 'white') || (!this.isWhiteTurn && pieceColor === 'black')) {
       this.chessService.setDragImage(ev, actualPiece);
       ev.dataTransfer?.setData('text/plain', actualPiece.id);
@@ -292,8 +291,10 @@ export class VsPcComponent implements OnInit {
   }
 
   resetBoard(): void {
+    // Clear game state
     localStorage.removeItem('chessGameState');
 
+    // Remove all pieces while preserving coordinates
     this.boardSquares.forEach((square: any) => {
       const piece = square.querySelector('.piece');
       if (piece) {
@@ -302,6 +303,7 @@ export class VsPcComponent implements OnInit {
       square.classList.remove('in-check');
     });
 
+    // Create fresh pieces
     const initialSetup = {
       a1: 'whiteRook', a2: 'whitePawn', a7: 'blackPawn', a8: 'blackRook',
       b1: 'whiteKnight', b2: 'whitePawn', b7: 'blackPawn', b8: 'blackKnight',
@@ -315,26 +317,34 @@ export class VsPcComponent implements OnInit {
 
     for (const [squareId, piece] of Object.entries(initialSetup)) {
       const square = document.getElementById(squareId);
-      const pieceDiv = document.createElement('div');
-      pieceDiv.className = `piece ${piece.slice(5).toLowerCase()}`;
-      pieceDiv.setAttribute('color', piece.startsWith('white') ? 'white' : 'black');
-      pieceDiv.setAttribute('draggable', 'true');
+      if (square) {
+        const pieceDiv = document.createElement('div');
+        pieceDiv.className = `piece ${piece.slice(5).toLowerCase()}`;
+        pieceDiv.setAttribute('color', piece.startsWith('white') ? 'white' : 'black');
+        pieceDiv.setAttribute('draggable', 'true');
 
-      const pieceImg = document.createElement('img');
-      pieceImg.src = `assets/pieces/${piece}.png`;
-      pieceImg.setAttribute('draggable', 'false');
+        const pieceImg = document.createElement('img');
+        pieceImg.src = `assets/${piece}.png`;
+        pieceImg.setAttribute('draggable', 'false');
+        pieceImg.style.pointerEvents = 'none';
 
-      pieceDiv.appendChild(pieceImg);
-      square?.appendChild(pieceDiv);
+        pieceDiv.appendChild(pieceImg);
+        square.appendChild(pieceDiv);
+      }
     }
 
+    // Reset game state
     this.isWhiteTurn = true;
-    console.log('Board reset!');
-    this.setupBoardSquares();
-    this.setupPieces();
     this.moveHistory = [];
     this.updateMoveHistoryDisplay();
+
+    // Force Angular to recognize new elements
+    setTimeout(() => {
+      this.setupPieces();
+      this.setupBoardSquares(); // This will reattach all event listeners
+    }, 0);
   }
+
 
   saveGameState(): void {
     const gameState = {
@@ -367,23 +377,38 @@ export class VsPcComponent implements OnInit {
     if (savedGameState && savedMoveHistory) {
       const gameState = JSON.parse(savedGameState);
 
+      // First, remove only the pieces, not the entire square content
       this.boardSquares.forEach((square: any) => {
-        square.innerHTML = '';
+        const piece = square.querySelector('.piece');
+        if (piece) {
+          square.removeChild(piece);
+        }
       });
 
+      // Then recreate and place the pieces
       gameState.pieces.forEach((pieceInfo: any) => {
         const square = document.getElementById(pieceInfo.squareId);
-        const pieceDiv = document.createElement('div');
-        pieceDiv.className = `piece ${pieceInfo.type}`;
-        pieceDiv.setAttribute('color', pieceInfo.color);
-        pieceDiv.setAttribute('draggable', 'true');
+        if (square) {
+          const pieceDiv = document.createElement('div');
+          pieceDiv.className = `piece ${pieceInfo.type}`;
+          pieceDiv.setAttribute('color', pieceInfo.color);
+          pieceDiv.setAttribute('draggable', 'true');
+          pieceDiv.id = pieceInfo.id;
 
-        const pieceImg = document.createElement('img');
-        pieceImg.src = `assets/pieces/${pieceInfo.color}${pieceInfo.type.charAt(0).toUpperCase() + pieceInfo.type.slice(1)}.png`;
-        pieceImg.setAttribute('draggable', 'false');
+          const pieceImg = document.createElement('img');
+          pieceImg.src = `assets/${pieceInfo.color}${pieceInfo.type.charAt(0).toUpperCase() + pieceInfo.type.slice(1)}.png`;
+          pieceImg.setAttribute('draggable', 'false');
 
-        pieceDiv.appendChild(pieceImg);
-        square?.appendChild(pieceDiv);
+          pieceDiv.appendChild(pieceImg);
+
+          // Insert the piece before any coordinate elements
+          const firstCoordinate = square.querySelector('.coordinate');
+          if (firstCoordinate) {
+            square.insertBefore(pieceDiv, firstCoordinate);
+          } else {
+            square.appendChild(pieceDiv);
+          }
+        }
       });
 
       this.moveHistory = JSON.parse(savedMoveHistory);
@@ -391,7 +416,12 @@ export class VsPcComponent implements OnInit {
 
       this.isWhiteTurn = gameState.turn;
       console.log('Game loaded!');
-      this.setupPieces();
+
+      // Reinitialize pieces and board
+      setTimeout(() => {
+        this.setupPieces();
+        this.setupBoardSquares();
+      }, 0);
     } else {
       console.log('No saved game found.');
     }
@@ -411,7 +441,19 @@ export class VsPcComponent implements OnInit {
         if (pawnImg) {
           this.renderer.setAttribute(pawnImg, 'src', newPieceImage);
         }
-        this.renderer.setAttribute(pawn, 'class', `piece ${option}`);
+
+        // Remove all existing classes and add new ones
+        this.renderer.setAttribute(pawn, 'class', `piece ${option.toLowerCase()}`);
+        pawn.setAttribute('color', color);
+
+        // Update the piece ID
+        pawn.id = `${option.toLowerCase()}${pawn.parentElement?.id}`;
+
+        // Reinitialize the piece
+        setTimeout(() => {
+          this.setupPieces(); // This will rebind all event listeners
+        }, 0);
+
         this.renderer.removeChild(document.body, modal);
       });
       this.renderer.appendChild(modal, button);

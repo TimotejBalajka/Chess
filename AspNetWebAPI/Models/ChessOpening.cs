@@ -2,11 +2,14 @@
 
 namespace AspNetCoreAPI.Models
 {
-    public class Class
+    public class ChessOpening
     {
         [Key]
         public int Id { get; set; }
-        public string Chess_Opening { get; set; }
+
+        public string? Name { get; set; }
+
+        public string? Description { get; set; }
 
     }
 }

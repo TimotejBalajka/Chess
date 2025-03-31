@@ -68,6 +68,7 @@ export class DashboardComponent implements OnInit {
       this.renderer.setStyle(img, 'pointer-events', 'none');
     });
   }
+
   allowDrop(ev: DragEvent): void {
     ev.preventDefault();
   }
