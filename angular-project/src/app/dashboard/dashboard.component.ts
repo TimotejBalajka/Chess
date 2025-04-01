@@ -141,8 +141,7 @@ export class DashboardComponent implements OnInit {
     });
 
     if (this.chessService.isCheckmate(currentPlayerColor)) {
-      console.log(`Checkmate! ${currentPlayerColor === 'white' ? 'Black' : 'White'} wins!`);
-      alert(`Checkmate! ${currentPlayerColor === 'white' ? 'Black' : 'White'} wins!`);
+      this.showCheckmateModal(currentPlayerColor === 'white' ? 'Black' : 'White');
     } else if (this.chessService.isCheck(currentPlayerColor)) {
       console.log(`${currentPlayerColor} is in check.`);
     } else {
@@ -150,6 +149,22 @@ export class DashboardComponent implements OnInit {
     }
   }
 
+  showCheckmateModal(winner: string): void {
+    const modal = document.getElementById('checkmateModal');
+    const winnerText = document.getElementById('checkmateWinnerText');
+    const newGameButton = document.getElementById('newGameButton');
+
+    if (modal && winnerText && newGameButton) {
+      winnerText.textContent = `${winner} wins the game!`;
+      modal.style.display = 'flex';
+
+      // Add event listener for the new game button
+      newGameButton.onclick = () => {
+        modal.style.display = 'none';
+        this.resetBoard();
+      };
+    }
+  }
   updateMoveHistoryDisplay(): void {
     const historyDiv = this.el.nativeElement.querySelector('#moveHistory');
     historyDiv.innerHTML = '';
@@ -197,6 +212,11 @@ export class DashboardComponent implements OnInit {
 
   resetBoard(): void {
     // Clear game state
+    const modal = document.getElementById('checkmateModal');
+    if (modal) {
+      modal.style.display = 'none';
+    }
+
     localStorage.removeItem('chessGameState');
 
     // Remove all pieces while preserving coordinates

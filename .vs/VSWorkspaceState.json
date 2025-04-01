@@ -7,8 +7,10 @@
     "\\angular-project\\src\\app\\dashboard",
     "\\angular-project\\src\\app\\vs-pc",
     "\\angular-project\\src\\assets",
-    "\\AspNetWebAPI"
+    "\\AspNetWebAPI",
+    "\\AspNetWebAPI\\Controllers",
+    "\\AspNetWebAPI\\Models"
   ],
-  "SelectedNode": "\\AspNetWebAPI\\AspNetWebAPI.sln",
+  "SelectedNode": "\\angular-project\\src\\app\\vs-pc\\vs-pc.component.ts",
   "PreviewInSolutionExplorer": false
 }
