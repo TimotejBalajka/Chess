@@ -4,12 +4,12 @@ import { Inject, Injectable } from '@angular/core';
 @Injectable({
   providedIn: 'root'
 })
-export class ChessService {
+export class openningService {
 
   constructor(private http: HttpClient, @Inject("BASE_URL") private baseUrl: string) { }
 
   getChessOpenings() {
-    return this.http.get<chessOpenings>(this.baseUrl);  
+    return this.http.get<chessOpenings[]>(this.baseUrl + '/vratChessOpenings');  
   }
 }
 

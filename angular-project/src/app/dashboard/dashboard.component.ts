@@ -1,5 +1,10 @@
 import { Component, OnInit, Renderer2, ElementRef } from '@angular/core';
 import { ChessService } from '../dashboard/chess.service.ts.service';
+import { inject } from '@angular/core/testing';
+import { openningService } from '../Service/openingService'
+import { Subject, takeUntil } from 'rxjs';
+import { ChessOpening } from 'src/app/DTOs/chessOpeningDTO'
+
 
 @Component({
   selector: 'app-dashboard',
@@ -15,13 +20,19 @@ export class DashboardComponent implements OnInit {
   moveHistory: any[] = [];
 
   currentlyDragging = false;
-
-
-  constructor(private renderer: Renderer2, private el: ElementRef, private chessService: ChessService) { }
+  private destroy$ = new Subject<void>();
+  openings: ChessOpening[];
+  constructor(private renderer: Renderer2, private el: ElementRef, private chessService: ChessService,private OpenningService: openningService) { }
 
   ngOnInit(): void {
     this.setupBoardSquares();
     this.setupPieces();
+    this.OpenningService.getChessOpenings()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(res => {
+        this.openings = res
+        console.log(this.openings)
+      });
   }
 
   setupBoardSquares(): void {
