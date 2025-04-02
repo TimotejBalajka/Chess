@@ -145,12 +145,33 @@ export class VsPcComponent implements OnInit {
 
     const currentPlayerColor = this.isWhiteTurn ? 'white' : 'black';
     if (this.chessService.isCheckmate(currentPlayerColor)) {
-      console.log(`Checkmate! ${currentPlayerColor === 'white' ? 'Black' : 'White'} wins!`);
-      alert(`Checkmate! ${currentPlayerColor === 'white' ? 'Black' : 'White'} wins!`);
+      this.showCheckmateModal(currentPlayerColor === 'white' ? 'Čierny' : 'Biely');
     } else if (this.chessService.isCheck(currentPlayerColor)) {
-      console.log(`${currentPlayerColor} is in check.`);
+      console.log(`${currentPlayerColor} je v šachu.`);
     } else {
-      console.log('Move executed.');
+      console.log('Tah vykonaný.');
+    }
+  }
+
+  showCheckmateModal(winner: string): void {
+    const modal = document.getElementById('checkmateModal');
+    const winnerText = document.getElementById('checkmateWinnerText');
+    const newGameButton = document.getElementById('newGameButton');
+    const closeModalButton = document.getElementById('closeModalButton');
+
+    if (modal && winnerText && newGameButton && closeModalButton) {
+      winnerText.textContent = `${winner} vyhral hru!`;
+      modal.style.display = 'flex';
+
+      // Add event listeners for buttons
+      newGameButton.onclick = () => {
+        modal.style.display = 'none';
+        this.resetBoard();
+      };
+
+      closeModalButton.onclick = () => {
+        modal.style.display = 'none';
+      };
     }
   }
 
