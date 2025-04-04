@@ -248,6 +248,128 @@ body {
   }
 
 
+  .openings-controls button {
+  padding: 10px 20px;
+  border-radius: 50px;
+  cursor: pointer;
+  border: 0;
+  background-color: white;
+  box-shadow: rgb(0 0 0 / 5%) 0 0 8px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  font-size: 14px;
+  transition: all 0.5s ease;
+  width: 200px;
+  text-align: center;
+  margin-top: 10px; /* Add some spacing if needed */
+}
+
+.openings-controls button:hover {
+  letter-spacing: 3px;
+  background-color: rgb(181, 136, 99);
+  color: hsl(0, 0%, 100%);
+  box-shadow: rgb(181 136 99) 0px 7px 29px 0px;
+}
+
+.openings-controls button:active {
+  letter-spacing: 3px;
+  background-color: rgb(181, 136, 99);
+  color: hsl(0, 0%, 100%);
+  box-shadow: rgb(181 136 99) 0px 0px 0px 0px;
+  transform: translateY(5px);
+  transition: 100ms;
+}
+
+/* Openings Panel */
+.openings-panel {
+  position: fixed;
+  top: 10px;
+  right: 50px;
+  width: 300px;
+  max-height: 80vh;
+  background: white;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.panel-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 15px;
+  background: #2c3e50;
+  color: white;
+  border-bottom: 1px solid #1a2a3a;
+}
+
+  .panel-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+  }
+
+.close-btn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
+  transition: background 0.2s;
+}
+
+  .close-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+
+/* Rest of your existing openings panel styles (keep these the same) */
+.openings-list {
+  padding: 10px;
+  overflow-y: auto;
+  max-height: calc(80vh - 50px);
+}
+
+.opening-item {
+  padding: 10px;
+  margin-bottom: 8px;
+  border: 1px solid #eee;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+  .opening-item:hover {
+    background-color: #f5f5f5;
+  }
+
+.move-sequence {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  margin-top: 5px;
+}
+
+.move-number {
+  color: #666;
+  margin-right: 3px;
+}
+
+.move {
+  display: inline-block;
+  padding: 2px 6px;
+  margin: 0 3px 3px 0;
+  background: #f0f0f0;
+  border-radius: 3px;
+}
+
 
 @media (min-width: 600px) {
   body {

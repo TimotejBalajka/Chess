@@ -4,12 +4,15 @@ import { inject } from '@angular/core/testing';
 import { openningService } from '../Service/openingService'
 import { Subject, takeUntil } from 'rxjs';
 import { ChessOpening } from 'src/app/DTOs/chessOpeningDTO'
+import { CommonModule } from '@angular/common';
 
 
 @Component({
   selector: 'app-dashboard',
   templateUrl: './dashboard.component.html',
-  styleUrl: './dashboard.component.css'
+  styleUrl: './dashboard.component.css',
+  imports: [CommonModule],
+  standalone: true
 })
 export class DashboardComponent implements OnInit {
   legalSquares: any[] = [];
@@ -22,6 +25,8 @@ export class DashboardComponent implements OnInit {
   currentlyDragging = false;
   private destroy$ = new Subject<void>();
   openings: ChessOpening[];
+
+  showOpeningsPanel: boolean = false;
   constructor(private renderer: Renderer2, private el: ElementRef, private chessService: ChessService,private OpenningService: openningService) { }
 
   ngOnInit(): void {
@@ -33,6 +38,10 @@ export class DashboardComponent implements OnInit {
         this.openings = res
         console.log(this.openings)
       });
+  }
+
+  toggleOpeningsPanel(): void {
+    this.showOpeningsPanel = !this.showOpeningsPanel;
   }
 
   setupBoardSquares(): void {
