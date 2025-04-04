@@ -1,12 +1,18 @@
 import { Component, OnInit, Renderer2, ElementRef, importProvidersFrom } from '@angular/core';
 import { ChessService } from '../vs-pc/chess.service.ts.service';
 import { StockfishService } from "../vs-pc/stockfish.service";
-
+import { CommonModule } from '@angular/common';
+import { inject } from '@angular/core/testing';
+import { openningService } from '../Service/openingService'
+import { Subject, takeUntil } from 'rxjs';
+import { ChessOpening } from 'src/app/DTOs/chessOpeningDTO'
 
 @Component({
   selector: 'app-vs-pc',
   templateUrl: './vs-pc.component.html',
-  styleUrl: './vs-pc.component.css'
+  styleUrl: './vs-pc.component.css',
+  imports: [CommonModule],
+  standalone: true
 })
 export class VsPcComponent implements OnInit {
   legalSquares: any[] = [];
@@ -17,11 +23,26 @@ export class VsPcComponent implements OnInit {
   moveHistory: any[] = [];
   currentlyDragging = false;
 
-  constructor(private renderer: Renderer2, private el: ElementRef, private chessService: ChessService, private StockfishService: StockfishService ) { }
+  showOpeningsPanel: boolean = false;
+
+  private destroy$ = new Subject<void>();
+  openings: ChessOpening[];
+
+  constructor(private renderer: Renderer2, private el: ElementRef, private chessService: ChessService, private StockfishService: StockfishService, private OpenningService: openningService) { }
 
   ngOnInit(): void {
     this.setupBoardSquares();
     this.setupPieces();
+    this.OpenningService.getChessOpenings()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(res => {
+        this.openings = res
+        console.log(this.openings)
+      });
+  }
+
+  toggleOpeningsPanel(): void {
+    this.showOpeningsPanel = !this.showOpeningsPanel;
   }
 
   setupBoardSquares(): void {
@@ -116,7 +137,7 @@ export class VsPcComponent implements OnInit {
     }
   }
 
-  executeMove(piece: HTMLElement, startSquare: HTMLElement, endSquare: HTMLElement): void {
+  executeMove(piece: HTMLElement, startSquare: HTMLElement, endSquare: HTMLElement, promotionType?: string): void {
     const capturedPiece = endSquare.querySelector('.piece');
     const capturedPieceType = capturedPiece ? capturedPiece.getAttribute('class') : null;
 
@@ -138,7 +159,13 @@ export class VsPcComponent implements OnInit {
 
     if (piece!.classList.contains('pawn') && (endSquare.id[1] === '1' || endSquare.id[1] === '8')) {
       const color = piece!.getAttribute('color');
-      this.promotePawn(piece!, color!);
+      if (color === 'black') { // Bot's turn
+        // Automatically promote to queen (or other piece based on your logic)
+        this.promotePawn(piece!, color!, 'queen'); // Default to queen
+      } else {
+        // Human player - show promotion modal
+        this.promotePawn(piece!, color!);
+      }
     }
 
     this.isWhiteTurn = !this.isWhiteTurn;
@@ -200,6 +227,7 @@ export class VsPcComponent implements OnInit {
 
       const fromSquare = moveString.substring(0, 2);
       const toSquare = moveString.substring(2, 4);
+      const promotion = moveString.length > 4 ? moveString[4] : null;
 
       const startSquare = document.getElementById(fromSquare);
       const endSquare = document.getElementById(toSquare);
@@ -218,7 +246,17 @@ export class VsPcComponent implements OnInit {
       }
 
       setTimeout(() => {
-        this.executeMove(piece, startSquare, endSquare);
+        let promotionType: string | undefined;
+        if (promotion) {
+          // Convert Stockfish promotion character to piece type
+          switch (promotion.toLowerCase()) {
+            case 'q': promotionType = 'queen'; break;
+            case 'r': promotionType = 'rook'; break;
+            case 'b': promotionType = 'bishop'; break;
+            case 'n': promotionType = 'knight'; break;
+          }
+        }
+        this.executeMove(piece, startSquare, endSquare, promotionType);
       }, 500);
 
     } catch (error) {
@@ -231,11 +269,17 @@ export class VsPcComponent implements OnInit {
     const botMove = this.chessService.getRandomValidMove('black');
     if (botMove) {
       setTimeout(() => {
-        this.executeMove(botMove.piece, botMove.startSquare, botMove.endSquare);
+        // Check if this is a promotion move
+        let promotionType: string | undefined;
+        if (botMove.piece.classList.contains('pawn') &&
+          (botMove.endSquare.id[1] === '1' || botMove.endSquare.id[1] === '8')) {
+          // Default to queen for random moves
+          promotionType = 'queen';
+        }
+        this.executeMove(botMove.piece, botMove.startSquare, botMove.endSquare, promotionType);
       }, 500);
     }
   }
-
   getCurrentFEN(): string {
     let fen = '';
     for (let row = 0; row < 8; row++) {
@@ -448,7 +492,26 @@ export class VsPcComponent implements OnInit {
     }
   }
 
-  promotePawn(pawn: HTMLElement, color: string): void {
+  promotePawn(pawn: HTMLElement, color: string, promotionType?: string): void {
+    if (promotionType) {
+      // Automatic promotion for bot
+      const newPieceImage = `assets/${color}${promotionType.charAt(0).toUpperCase() + promotionType.slice(1)}.png`;
+      const pawnImg = pawn.querySelector('img');
+      if (pawnImg) {
+        this.renderer.setAttribute(pawnImg, 'src', newPieceImage);
+      }
+
+      this.renderer.setAttribute(pawn, 'class', `piece ${promotionType.toLowerCase()}`);
+      pawn.setAttribute('color', color);
+      pawn.id = `${promotionType.toLowerCase()}${pawn.parentElement?.id}`;
+
+      setTimeout(() => {
+        this.setupPieces();
+      }, 0);
+      return;
+    }
+
+    // Human player - show promotion modal
     const modal = this.renderer.createElement('div');
     this.renderer.addClass(modal, 'promotion-modal');
 
@@ -463,16 +526,12 @@ export class VsPcComponent implements OnInit {
           this.renderer.setAttribute(pawnImg, 'src', newPieceImage);
         }
 
-        // Remove all existing classes and add new ones
         this.renderer.setAttribute(pawn, 'class', `piece ${option.toLowerCase()}`);
         pawn.setAttribute('color', color);
-
-        // Update the piece ID
         pawn.id = `${option.toLowerCase()}${pawn.parentElement?.id}`;
 
-        // Reinitialize the piece
         setTimeout(() => {
-          this.setupPieces(); // This will rebind all event listeners
+          this.setupPieces();
         }, 0);
 
         this.renderer.removeChild(document.body, modal);

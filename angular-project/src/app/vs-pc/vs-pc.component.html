@@ -242,7 +242,33 @@
     <button class="restart" id="restartButton">Reštartovanie hry</button>
     <button class="save" id="saveButton">Uloženie hry</button>
     <button class="load" id="loadButton">Načítanie hry</button>
+
+    <div class="openings-controls">
+      <button (click)="toggleOpeningsPanel()">SHOW OPENINGS</button>
+    </div>
+
+    <div class="openings-panel" *ngIf="showOpeningsPanel">
+      <div class="panel-header">
+        <h3>Chess Openings</h3>
+        <button class="close-btn" (click)="toggleOpeningsPanel()">×</button>
+      </div>
+      <div class="openings-list">
+        <div *ngFor="let opening of openings"
+             class="opening-item">
+          <h4>{{ opening.name }}</h4>
+          <div class="move-sequence">
+            <span *ngFor="let move of opening.description.split(' '); let i = index">
+              <span class="move-number" *ngIf="i % 2 === 0">{{ (i / 2) + 1 }}.</span>
+              <span class="move">{{ move }}</span>
+            </span>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
+
+
+
 
   <div id="checkmateModal" class="checkmate-modal" style="display: none;">
     <div class="checkmate-content">
