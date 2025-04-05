@@ -75,9 +75,14 @@ export class ChessService {
       return true;
     }
 
-    if (startX === endX && startY === startingRow && endY === startY + 2 * direction &&
-      this.isSquareOccupied(endSquare) === 'blank') {
-      return true;
+    if (startX === endX && startY === startingRow && endY === startY + 2 * direction) {
+      const middleSquareY = startY + direction;
+      const middleSquare = document.getElementById(String.fromCharCode(97 + startX) + (8 - middleSquareY));
+
+      if (middleSquare && this.isSquareOccupied(middleSquare) === 'blank' &&
+        this.isSquareOccupied(endSquare) === 'blank') {
+        return true;
+      }
     }
 
     if (Math.abs(endX - startX) === 1 && endY === startY + direction &&

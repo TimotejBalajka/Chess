@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ChessMaster - Play Online Chess</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+  <style>
+    :root {
+      --primary: #4361ee;
+      --primary-light: #4895ef;
+      --secondary: #3f37c9;
+      --accent: #4cc9f0;
+      --dark: #1a1a2e;
+      --light: #f8f9fa;
+      --success: #38b000;
+      --warning: #ff9e00;
+      --danger: #ef233c;
+      --chess-light: #f0d9b5;
+      --chess-dark: #b58863;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+      color: var(--dark);
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 20px;
+    }
+
+    /* Header */
+    header {
+      background: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      padding: 15px 0;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .navbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+      .logo img {
+        height: 40px;
+      }
+
+    .logo-text {
+      font-size: 1.8rem;
+      font-weight: 700;
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 25px;
+    }
+
+      .nav-links a {
+        text-decoration: none;
+        color: var(--dark);
+        font-weight: 600;
+        transition: all 0.3s;
+        position: relative;
+      }
+
+        .nav-links a:hover {
+          color: var(--primary);
+        }
+
+        .nav-links a::after {
+          content: '';
+          position: absolute;
+          bottom: -5px;
+          left: 0;
+          width: 0;
+          height: 2px;
+          background: var(--primary);
+          transition: width 0.3s;
+        }
+
+        .nav-links a:hover::after {
+          width: 100%;
+        }
+
+    /* Hero Section */
+    .hero {
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+      padding: 4rem 2rem;
+      overflow: hidden;
+    }
+
+    .hero-container {
+      max-width: 800px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 3rem;
+    }
+
+    .hero-content {
+      flex: 1;
+      padding-right: 2rem;
+    }
+
+      .hero-content h1 {
+        font-size: 3rem;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        line-height: 1.2;
+        background: linear-gradient(to right, #2c3e50, #4ca1af);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero-content p {
+        font-size: 1.2rem;
+        color: #5a6a7e;
+        margin-bottom: 2rem;
+        line-height: 1.6;
+      }
+
+    .hero-buttons {
+      display: flex;
+      gap: 1rem;
+      margin-top: 2rem;
+    }
+
+    .hero-image {
+      flex: 1;
+      position: relative;
+      min-height: 400px;
+    }
+
+      .hero-image img {
+        width: 120%;
+        height: auto;
+        border-radius: 12px;
+        box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      }
+
+    .chess-pieces {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    .floating-piece {
+      position: absolute;
+      width: 80px;
+      height: auto;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    .piece-1 {
+      top: 20%;
+      left: -30px;
+      animation-delay: 0s;
+    }
+
+    .piece-2 {
+      bottom: 15%;
+      right: -20px;
+      animation-delay: 1s;
+    }
+
+    @keyframes float {
+      0%, 100% {
+        transform: translateY(0) rotate(0deg);
+      }
+
+      50% {
+        transform: translateY(-20px) rotate(5deg);
+      }
+    }
+
+    /* Buttons */
+    .btn-primary {
+      background: linear-gradient(135deg, #4361ee, #3a0ca3);
+      color: white;
+      padding: 0.8rem 1.8rem;
+      border: none;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3);
+    }
+
+      .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(67, 97, 238, 0.4);
+      }
+
+    .btn-secondary {
+      background: white;
+      color: #4361ee;
+      padding: 0.8rem 1.8rem;
+      border: 2px solid #4361ee;
+      border-radius: 50px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+      .btn-secondary:hover {
+        background: #4361ee;
+        color: white;
+      }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+      .hero-container {
+        flex-direction: column;
+        gap: 2rem;
+      }
+
+      .hero-content {
+        padding-right: 0;
+        text-align: center;
+      }
+
+      .hero-buttons {
+        justify-content: center;
+      }
+
+      .hero-image {
+        min-height: 300px;
+      }
+
+        .hero-image img {
+          transform: perspective(1000px) rotateY(0deg);
+        }
+
+      .floating-piece {
+        width: 60px;
+      }
+    }
+
+    /* Game Modes */
+    .game-modes {
+      padding: 60px 0;
+    }
+
+    .section-title {
+      text-align: center;
+      font-size: 2.5rem;
+      margin-bottom: 50px;
+      color: var(--secondary);
+      position: relative;
+    }
+
+      .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100px;
+        height: 4px;
+        background: linear-gradient(to right, var(--primary), var(--accent));
+        border-radius: 2px;
+      }
+
+    .mode-cards {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+      gap: 30px;
+    }
+
+    .mode-card {
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s;
+    }
+
+      .mode-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+      }
+
+    .card-header {
+      height: 200px;
+      position: relative;
+      overflow: hidden;
+    }
+
+      .card-header img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: all 0.5s;
+      }
+
+    .mode-card:hover .card-header img {
+      transform: scale(1.1);
+    }
+
+    .card-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7));
+      display: flex;
+      align-items: flex-end;
+      padding: 20px;
+    }
+
+    .card-title {
+      color: white;
+      font-size: 1.8rem;
+      font-weight: 700;
+    }
+
+    .card-body {
+      padding: 25px;
+    }
+
+    .card-text {
+      color: #555;
+      margin-bottom: 20px;
+      line-height: 1.6;
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-block;
+      padding: 12px 30px;
+      border-radius: 50px;
+      font-weight: 600;
+      text-decoration: none;
+      transition: all 0.3s;
+      cursor: pointer;
+      border: none;
+      font-size: 1rem;
+    }
+
+    .btn-primary {
+      background: linear-gradient(to right, var(--primary), var(--secondary));
+      color: white;
+      box-shadow: 0 5px 15px rgba(67, 97, 238, 0.4);
+    }
+
+      .btn-primary:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(67, 97, 238, 0.6);
+      }
+
+    .btn-secondary {
+      background: white;
+      color: var(--primary);
+      border: 2px solid var(--primary);
+    }
+
+      .btn-secondary:hover {
+        background: var(--primary);
+        color: white;
+      }
+
+    .btn-block {
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+
+
+    /* Responsive Design */
+    @media (max-width: 992px) {
+      .hero {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .hero-content {
+        margin-bottom: 40px;
+      }
+
+      .hero-title {
+        font-size: 2.8rem;
+      }
+
+      .hero-subtitle {
+        margin-left: auto;
+        margin-right: auto;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        gap: 20px;
+      }
+
+      .nav-links {
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      .hero-title {
+        font-size: 2.2rem;
+      }
+
+      .section-title {
+        font-size: 2rem;
+      }
+
+      .mode-cards {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <nav class="navbar">
+        <div class="logo">
+          <img src="assets/chess.png" alt="Chess Logo">
+          <p>Chess-Balajka</p>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="hero-container">
+        <div class="hero-content">
+          <h1>Hrajte šach online</h1>
+          <p>Pripojte sa k miliónom hráčov na celom svete v dokonalom šachovom zážitku. Vyzvite priateľov alebo otestujte svoje schopnosti proti našej AI.</p>
+        </div>
+        <div class="hero-image">
+          <img src="assets/Chessboard.png" alt="Chess board with pieces">
+          <div class="chess-pieces">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="game-modes">
+      <div class="container">
+        <h2 class="section-title">Vyberte si spôsob hry</h2>
+        <div class="mode-cards">
+          <div class="mode-card">
+            <div class="card-header">
+              <img src="assets/vspc.png" alt="Play vs Computer">
+              <div class="card-overlay">
+                <h3 class="card-title">Vs Počítač</h3>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="card-text">Vyzvite našu AI a zahrajte neskutočnú hru. Zdokonalte svoju stratégiu proti dokonalému súperovi.</p>
+              <button (click)="navigateToBotPage()" href="#" class="btn btn-primary btn-block">Play vs Computer</button>
+            </div>
+          </div>
+
+          <div class="mode-card">
+            <div class="card-header">
+              <img src="https://images.unsplash.com/photo-1586165368502-1bad197a6461?ixlib=rb-1.2.1&auto=format&fit=crop&w=1350&q=80" alt="Play with Friends">
+              <div class="card-overlay">
+                <h3 class="card-title">Proti Kamarátovi</h3>
+              </div>
+            </div>
+            <div class="card-body">
+              <p class="card-text">Pozvite priateľov na zápas o tom kto je lepší. Stretnite sa a hrajte spolu.</p>
+              <button (click)="navigateToPlayerPage()" href="#" class="btn btn-primary btn-block">Play with Friends</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</body>
+</html>

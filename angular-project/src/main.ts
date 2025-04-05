@@ -7,6 +7,7 @@ import { provideAnimations } from '@angular/platform-browser/animations';
 import { DashboardComponent } from './app/dashboard/dashboard.component';
 import { JwtModule } from '@auth0/angular-jwt';
 import { VsPcComponent } from './app/vs-pc/vs-pc.component';
+import { MainPageComponent } from './app/main-page/main-page.component';
 
 
 
@@ -35,8 +36,9 @@ bootstrapApplication(AppComponent, {
       })),
       provideAnimations(),
       provideHttpClient(withInterceptors([])),
-      provideRouter([
-        { path: '', component: DashboardComponent },
+    provideRouter([
+        { path: '', component: MainPageComponent },
+        { path: 'VsPlayer', component: DashboardComponent },
         { path: 'VsPC', component: VsPcComponent },
       ])
     ]

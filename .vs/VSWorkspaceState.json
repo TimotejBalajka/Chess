@@ -5,12 +5,12 @@
     "\\angular-project\\src",
     "\\angular-project\\src\\app",
     "\\angular-project\\src\\app\\dashboard",
-    "\\angular-project\\src\\assets",
+    "\\angular-project\\src\\app\\DTOs",
+    "\\angular-project\\src\\app\\main-page",
     "\\AspNetWebAPI",
-    "\\AspNetWebAPI\\Controllers",
     "\\AspNetWebAPI\\Migrations",
     "\\AspNetWebAPI\\Models"
   ],
-  "SelectedNode": "\\angular-project\\src\\app\\dashboard\\dashboard.component.css",
+  "SelectedNode": "\\angular-project\\src\\app\\vs-pc\\vs-pc.component.ts",
   "PreviewInSolutionExplorer": false
 }

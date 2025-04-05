@@ -102,13 +102,17 @@ export class VsPcComponent implements OnInit {
     const actualPiece = piece.classList.contains('piece') ? piece : piece.parentElement as HTMLElement;
 
     const pieceColor = actualPiece.getAttribute('color');
-    if ((this.isWhiteTurn && pieceColor === 'white') || (!this.isWhiteTurn && pieceColor === 'black')) {
+    // Only allow dragging white pieces when it's white's turn
+    if (this.isWhiteTurn && pieceColor === 'white') {
       this.chessService.setDragImage(ev, actualPiece);
       ev.dataTransfer?.setData('text/plain', actualPiece.id);
       const startSquare = actualPiece.parentElement?.id;
       if (startSquare) {
         ev.dataTransfer?.setData('startSquare', startSquare);
       }
+    } else {
+      // Prevent dragging for black pieces or when it's not white's turn
+      ev.preventDefault();
     }
   }
 
@@ -116,10 +120,17 @@ export class VsPcComponent implements OnInit {
     this.currentlyDragging = false;
     ev.preventDefault();
     this.chessService.clearHighlights(); // Clear highlights when dropping
+
     const pieceId = ev.dataTransfer?.getData('text/plain');
     const piece = document.getElementById(pieceId!);
     const startSquare = document.getElementById(ev.dataTransfer?.getData('startSquare')!);
     const endSquare = ev.currentTarget as HTMLElement;
+
+    // Additional check to ensure only white pieces are moved by player
+    if (piece?.getAttribute('color') !== 'white') {
+      console.log('Only white pieces can be moved by player');
+      return;
+    }
 
     if (!this.chessService.isMoveValid(piece!, startSquare, endSquare)) {
       console.log('Invalid move');
@@ -135,8 +146,7 @@ export class VsPcComponent implements OnInit {
     if (!this.isWhiteTurn) {
       this.makeBotMove();
     }
-  }
-
+  } 
   executeMove(piece: HTMLElement, startSquare: HTMLElement, endSquare: HTMLElement, promotionType?: string): void {
     const capturedPiece = endSquare.querySelector('.piece');
     const capturedPieceType = capturedPiece ? capturedPiece.getAttribute('class') : null;
@@ -551,8 +561,8 @@ export class VsPcComponent implements OnInit {
 
   // Update the mouse enter handler
   onPieceMouseEnter(piece: HTMLElement, event: MouseEvent): void {
-    if ((this.isWhiteTurn && piece.getAttribute('color') === 'white') ||
-      (!this.isWhiteTurn && piece.getAttribute('color') === 'black')) {
+    // Only highlight white pieces when it's white's turn
+    if (this.isWhiteTurn && piece.getAttribute('color') === 'white') {
       const square = piece.parentElement as HTMLElement;
       this.chessService.clearHighlights();
 
@@ -570,7 +580,6 @@ export class VsPcComponent implements OnInit {
       });
     }
   }
-
   async getEngineMove(fen: string): Promise<any> {
     try {
       return await this.StockfishService.getBestMove(fen).toPromise();
@@ -579,6 +588,7 @@ export class VsPcComponent implements OnInit {
       return null;
     }
   }
+
 }
 
 interface StockfishResponse {
