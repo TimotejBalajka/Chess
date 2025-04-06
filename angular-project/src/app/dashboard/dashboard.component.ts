@@ -64,16 +64,12 @@ export class DashboardComponent implements OnInit {
   }
 
   setupPieces(): void {
-    // First, clear existing references
     this.pieces = this.el.nativeElement.querySelectorAll('.piece');
 
-    // Set up new pieces with fresh event listeners
     this.pieces.forEach((piece: any) => {
-      // Remove any existing event listeners by cloning the element
       const newPiece = piece.cloneNode(true);
       piece.parentNode.replaceChild(newPiece, piece);
 
-      // Set up new listeners on the fresh element
       this.renderer.listen(newPiece, 'dragstart', (ev) => this.drag(ev));
       this.renderer.listen(newPiece, 'mouseenter', (ev) => this.onPieceMouseEnter(ev.target, ev));
       this.renderer.listen(newPiece, 'mouseleave', () => this.onPieceMouseLeave());
@@ -81,7 +77,6 @@ export class DashboardComponent implements OnInit {
       newPiece.id = newPiece.className.split(' ')[1] + newPiece.parentElement.id;
     });
 
-    // Set up images (prevent them from being draggable)
     this.piecesImages = this.el.nativeElement.querySelectorAll('.piece img');
     this.piecesImages.forEach((img: any) => {
       this.renderer.setAttribute(img, 'draggable', 'false');
@@ -97,7 +92,6 @@ export class DashboardComponent implements OnInit {
     this.currentlyDragging = true;
     const piece = ev.target as HTMLElement;
 
-    // Handle case where img is dragged instead of piece div
     const actualPiece = piece.classList.contains('piece') ? piece : piece.parentElement as HTMLElement;
 
     const pieceColor = actualPiece.getAttribute('color');
@@ -116,7 +110,7 @@ export class DashboardComponent implements OnInit {
   drop(ev: DragEvent): void {
     this.currentlyDragging = false;
     ev.preventDefault();
-    this.chessService.clearHighlights(); // Clear highlights when dropping
+    this.chessService.clearHighlights();
 
     const pieceId = ev.dataTransfer?.getData('text/plain');
     const piece = document.getElementById(pieceId!);
@@ -178,7 +172,6 @@ export class DashboardComponent implements OnInit {
       winnerText.textContent = `${winner} wins the game!`;
       modal.style.display = 'flex';
 
-      // Add event listener for the new game button
       newGameButton.onclick = () => {
         modal.style.display = 'none';
         this.resetBoard();
@@ -231,7 +224,6 @@ export class DashboardComponent implements OnInit {
   }
 
   resetBoard(): void {
-    // Clear game state
     const modal = document.getElementById('checkmateModal');
     if (modal) {
       modal.style.display = 'none';
@@ -239,7 +231,6 @@ export class DashboardComponent implements OnInit {
 
     localStorage.removeItem('chessGameState');
 
-    // Remove all pieces while preserving coordinates
     this.boardSquares.forEach((square: any) => {
       const piece = square.querySelector('.piece');
       if (piece) {
@@ -248,7 +239,6 @@ export class DashboardComponent implements OnInit {
       square.classList.remove('in-check');
     });
 
-    // Create fresh pieces
     const initialSetup = {
       a1: 'whiteRook', a2: 'whitePawn', a7: 'blackPawn', a8: 'blackRook',
       b1: 'whiteKnight', b2: 'whitePawn', b7: 'blackPawn', b8: 'blackKnight',
@@ -278,15 +268,13 @@ export class DashboardComponent implements OnInit {
       }
     }
 
-    // Reset game state
     this.isWhiteTurn = true;
     this.moveHistory = [];
     this.updateMoveHistoryDisplay();
 
-    // Force Angular to recognize new elements
     setTimeout(() => {
       this.setupPieces();
-      this.setupBoardSquares(); // This will reattach all event listeners
+      this.setupBoardSquares();
     }, 0);
   }
   saveGameState(): void {
@@ -320,7 +308,6 @@ export class DashboardComponent implements OnInit {
     if (savedGameState && savedMoveHistory) {
       const gameState = JSON.parse(savedGameState);
 
-      // First, remove only the pieces, not the entire square content
       this.boardSquares.forEach((square: any) => {
         const piece = square.querySelector('.piece');
         if (piece) {
@@ -328,7 +315,6 @@ export class DashboardComponent implements OnInit {
         }
       });
 
-      // Then recreate and place the pieces
       gameState.pieces.forEach((pieceInfo: any) => {
         const square = document.getElementById(pieceInfo.squareId);
         if (square) {
@@ -344,7 +330,6 @@ export class DashboardComponent implements OnInit {
 
           pieceDiv.appendChild(pieceImg);
 
-          // Insert the piece before any coordinate elements
           const firstCoordinate = square.querySelector('.coordinate');
           if (firstCoordinate) {
             square.insertBefore(pieceDiv, firstCoordinate);
@@ -360,7 +345,6 @@ export class DashboardComponent implements OnInit {
       this.isWhiteTurn = gameState.turn;
       console.log('Game loaded!');
 
-      // Reinitialize pieces and board
       setTimeout(() => {
         this.setupPieces();
         this.setupBoardSquares();
@@ -384,16 +368,13 @@ promotePawn(pawn: HTMLElement, color: string): void {
         this.renderer.setAttribute(pawnImg, 'src', newPieceImage);
       }
       
-      // Remove all existing classes and add new ones
       this.renderer.setAttribute(pawn, 'class', `piece ${option.toLowerCase()}`);
       pawn.setAttribute('color', color);
       
-      // Update the piece ID
       pawn.id = `${option.toLowerCase()}${pawn.parentElement?.id}`;
       
-      // Reinitialize the piece
       setTimeout(() => {
-        this.setupPieces(); // This will rebind all event listeners
+        this.setupPieces();
       }, 0);
       
       this.renderer.removeChild(document.body, modal);
@@ -404,25 +385,20 @@ promotePawn(pawn: HTMLElement, color: string): void {
   this.renderer.appendChild(document.body, modal);
   }
 
-  // Update the mouse leave handler
   onPieceMouseLeave(): void {
-    // Only clear highlights if not currently dragging
     if (!this.currentlyDragging) {
       this.chessService.clearHighlights();
     }
   }
 
-  // Update the mouse enter handler
   onPieceMouseEnter(piece: HTMLElement, event: MouseEvent): void {
     if ((this.isWhiteTurn && piece.getAttribute('color') === 'white') ||
       (!this.isWhiteTurn && piece.getAttribute('color') === 'black')) {
       const square = piece.parentElement as HTMLElement;
       this.chessService.clearHighlights();
 
-      // Highlight the current square
       this.chessService.highlightSquare(square);
 
-      // Highlight all legal moves
       const legalMoves = this.chessService.getLegalMoves(piece, square);
       legalMoves.forEach(move => {
         const squareId = String.fromCharCode(97 + move.x) + (8 - move.y);

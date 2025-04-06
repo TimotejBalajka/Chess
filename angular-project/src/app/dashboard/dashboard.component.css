@@ -261,7 +261,7 @@ body {
   transition: all 0.5s ease;
   width: 200px;
   text-align: center;
-  margin-top: 10px; /* Add some spacing if needed */
+  margin-top: 10px;
 }
 
 .openings-controls button:hover {
@@ -280,7 +280,6 @@ body {
   transition: 100ms;
 }
 
-/* Openings Panel */
 .openings-panel {
   position: fixed;
   top: 10px;
@@ -331,7 +330,6 @@ body {
     background: rgba(255, 255, 255, 0.2);
   }
 
-/* Rest of your existing openings panel styles (keep these the same) */
 .openings-list {
   padding: 10px;
   overflow-y: auto;
