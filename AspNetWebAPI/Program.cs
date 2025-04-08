@@ -48,7 +48,7 @@ builder.Services.AddCors(options =>
         name: MyAllowSpecificOrigins,
         policy =>
         {
-            policy.WithOrigins("http://localhost:4200", "https://Balajka.bsite.net/").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
+            policy.WithOrigins("https://chess-balajka.web.app", "http://localhost:4200").AllowAnyHeader().AllowAnyMethod().AllowCredentials();
         });
 });
 

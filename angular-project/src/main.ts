@@ -30,7 +30,7 @@ bootstrapApplication(AppComponent, {
       importProvidersFrom(BrowserModule, JwtModule.forRoot({
         config: {
           tokenGetter: tokenGetter,
-          allowedDomains: ['https://localhost:7186', 'https://Balajka.bsite.net/api'],
+          allowedDomains: [/*'https://localhost:7186',*/ 'https://Balajka.bsite.net/api'],
           disallowedRoutes: [],
         },
       })),

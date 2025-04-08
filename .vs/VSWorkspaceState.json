@@ -4,10 +4,10 @@
     "\\angular-project",
     "\\angular-project\\src",
     "\\angular-project\\src\\app",
-    "\\angular-project\\src\\app\\dashboard",
-    "\\angular-project\\src\\app\\DTOs",
     "\\angular-project\\src\\app\\vs-pc",
     "\\AspNetWebAPI",
+    "\\AspNetWebAPI\\.config",
+    "\\AspNetWebAPI\\Controllers",
     "\\AspNetWebAPI\\Migrations",
     "\\AspNetWebAPI\\Models"
   ],

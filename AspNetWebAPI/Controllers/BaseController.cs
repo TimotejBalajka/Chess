@@ -9,6 +9,7 @@ namespace AspNetCoreAPI.Controllers
 {
     [ApiController]
     [Controller]
+    [Route("[controller]")]
     
     public class BaseController : ControllerBase
     {
