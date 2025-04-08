@@ -12,8 +12,8 @@ import { MainPageComponent } from './app/main-page/main-page.component';
 
 
 export function getBaseUrl() {
-  return 'https://localhost:7186/api';
-  // return 'https://openlab.bsite.net/api';
+  //return 'https://localhost:7186/api';
+  return 'https://Balajka.bsite.net/';
 }
 
 export function tokenGetter() {
@@ -30,7 +30,7 @@ bootstrapApplication(AppComponent, {
       importProvidersFrom(BrowserModule, JwtModule.forRoot({
         config: {
           tokenGetter: tokenGetter,
-          allowedDomains: ['https://localhost:7186', 'https://openlab.bsite.net'],
+          allowedDomains: ['https://localhost:7186', 'https://Balajka.bsite.net/'],
           disallowedRoutes: [],
         },
       })),

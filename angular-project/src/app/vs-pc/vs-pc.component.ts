@@ -76,6 +76,11 @@ export class VsPcComponent implements OnInit {
 
       // Set up new listeners on the fresh element
       this.renderer.listen(newPiece, 'dragstart', (ev) => this.drag(ev));
+      this.renderer.listen(newPiece, 'touchstart', (ev) => this.handleTouchStart(ev));
+      this.renderer.listen(newPiece, 'touchmove', (ev) => this.handleTouchMove(ev));
+      this.renderer.listen(newPiece, 'touchend', (ev) => this.handleTouchEnd(ev));
+      this.renderer.listen(newPiece, 'touchcancel', (ev) => this.handleTouchEnd(ev));
+
       this.renderer.listen(newPiece, 'mouseenter', (ev) => this.onPieceMouseEnter(ev.target, ev));
       this.renderer.listen(newPiece, 'mouseleave', () => this.onPieceMouseLeave());
       this.renderer.setAttribute(newPiece, 'draggable', 'true');
@@ -336,7 +341,7 @@ export class VsPcComponent implements OnInit {
 
       const pieceTranslation = this.translatePieceType(move.piece.split(' ')[1]);
 
-      moveText.textContent = `${index + 1}. ${colorTranslation} ${pieceTranslation} to ${move.end}` +
+      moveText.textContent = `${index + 1}. ${colorTranslation} ${pieceTranslation} na ${move.end}` +
         (move.captured ? ` (Zobratý ${this.translatePieceType(move.captured.split(' ')[1])})` : '');
       historyDiv.appendChild(moveText);
     });
@@ -589,7 +594,151 @@ export class VsPcComponent implements OnInit {
     }
   }
 
+
+  // Add these properties to your component
+  private touchActive: boolean = false;
+  private touchStartX: number = 0;
+  private touchStartY: number = 0;
+  private draggedPiece: HTMLElement | null = null;
+  private draggedPieceStartSquare: HTMLElement | null = null;
+  private validDropSquares: HTMLElement[] = [];
+
+  // Replace your touch handlers with these
+  handleTouchStart(ev: TouchEvent): void {
+    if (!this.isWhiteTurn) return;
+
+    ev.preventDefault();
+    this.touchActive = true;
+    const touch = ev.touches[0];
+    this.touchStartX = touch.clientX;
+    this.touchStartY = touch.clientY;
+
+    const element = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement;
+    const piece = element.classList.contains('piece') ? element : element.closest('.piece');
+
+    if (piece && piece.getAttribute('color') === 'white') {
+      this.draggedPiece = piece as HTMLElement;
+      this.draggedPieceStartSquare = this.draggedPiece.parentElement as HTMLElement;
+
+      // Highlight valid moves immediately
+      this.showValidMoves(this.draggedPiece, this.draggedPieceStartSquare);
+
+      // Set up dragging visuals
+      this.setupDragVisuals(this.draggedPiece, touch.clientX, touch.clientY);
+    }
+  }
+
+  handleTouchMove(ev: TouchEvent): void {
+    if (!this.touchActive || !this.draggedPiece) return;
+    ev.preventDefault();
+
+    const touch = ev.touches[0];
+    this.updateDragPosition(this.draggedPiece, touch.clientX, touch.clientY);
+  }
+
+  handleTouchEnd(ev: TouchEvent): void {
+    if (!this.touchActive) return;
+    ev.preventDefault();
+
+    const touch = ev.changedTouches[0];
+    const endSquare = this.getSquareFromTouch(touch.clientX, touch.clientY);
+
+    if (this.draggedPiece && this.draggedPieceStartSquare) {
+      if (endSquare && this.isValidDrop(endSquare)) {
+        this.executeMoveAndTriggerBot();
+      } else {
+        this.resetPiecePosition();
+      }
+    }
+
+    this.cleanUpAfterTouch();
+  }
+
+  // Helper methods
+  private showValidMoves(piece: HTMLElement, startSquare: HTMLElement): void {
+    this.chessService.clearHighlights();
+    this.validDropSquares = [];
+
+    const legalMoves = this.chessService.getLegalMoves(piece, startSquare);
+    legalMoves.forEach(move => {
+      const squareId = String.fromCharCode(97 + move.x) + (8 - move.y);
+      const targetSquare = document.getElementById(squareId);
+      if (targetSquare) {
+        this.chessService.highlightSquare(targetSquare);
+        this.validDropSquares.push(targetSquare);
+      }
+    });
+  }
+
+  private setupDragVisuals(piece: HTMLElement, clientX: number, clientY: number): void {
+    piece.style.position = 'fixed';
+    piece.style.zIndex = '1000';
+    piece.style.width = '15vw';
+    piece.style.height = '15vw';
+    piece.style.pointerEvents = 'none';
+    piece.style.transform = 'translate(-50%, -50%) scale(1.2)';
+    this.updateDragPosition(piece, clientX, clientY);
+  }
+
+  private updateDragPosition(piece: HTMLElement, clientX: number, clientY: number): void {
+    piece.style.left = `${clientX}px`;
+    piece.style.top = `${clientY}px`;
+  }
+
+  private getSquareFromTouch(clientX: number, clientY: number): HTMLElement | null {
+    const elements = document.elementsFromPoint(clientX, clientY);
+    for (const element of elements) {
+      if (element.classList.contains('square')) {
+        return element as HTMLElement;
+      }
+    }
+    return null;
+  }
+
+  private isValidDrop(square: HTMLElement): boolean {
+    return this.validDropSquares.some(validSquare => validSquare.id === square.id) &&
+      this.draggedPieceStartSquare !== null &&
+      this.chessService.isMoveValid(this.draggedPiece!, this.draggedPieceStartSquare, square);
+  }
+
+  private executeMoveAndTriggerBot(): void {
+    if (!this.draggedPiece || !this.draggedPieceStartSquare) return;
+
+    const endSquare = this.getSquareFromTouch(
+      parseInt(this.draggedPiece.style.left),
+      parseInt(this.draggedPiece.style.top)
+    );
+
+    if (endSquare) {
+      this.executeMove(this.draggedPiece, this.draggedPieceStartSquare, endSquare);
+
+      if (!this.isWhiteTurn) {
+        setTimeout(() => {
+          this.makeBotMove();
+        }, 500);
+      }
+    }
+  }
+
+  private resetPiecePosition(): void {
+    if (this.draggedPiece && this.draggedPieceStartSquare) {
+      this.draggedPieceStartSquare.appendChild(this.draggedPiece);
+    }
+  }
+
+  private cleanUpAfterTouch(): void {
+    if (this.draggedPiece) {
+      this.chessService.resetPieceStyles(this.draggedPiece);
+    }
+
+    this.chessService.clearHighlights();
+    this.touchActive = false;
+    this.draggedPiece = null;
+    this.draggedPieceStartSquare = null;
+    this.validDropSquares = [];
+  }
 }
+
 
 interface StockfishResponse {
   success: boolean;

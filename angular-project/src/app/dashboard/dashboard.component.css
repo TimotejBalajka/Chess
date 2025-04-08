@@ -34,6 +34,7 @@ body {
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  touch-action: none;
 }
 
 .white {
@@ -77,6 +78,11 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  touch-action: none; 
 }
 
 .piece img {

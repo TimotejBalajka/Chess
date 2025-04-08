@@ -71,6 +71,11 @@ export class DashboardComponent implements OnInit {
       piece.parentNode.replaceChild(newPiece, piece);
 
       this.renderer.listen(newPiece, 'dragstart', (ev) => this.drag(ev));
+      this.renderer.listen(newPiece, 'touchstart', (ev) => this.handleTouchStart(ev));
+      this.renderer.listen(newPiece, 'touchmove', (ev) => this.handleTouchMove(ev));
+      this.renderer.listen(newPiece, 'touchend', (ev) => this.handleTouchEnd(ev));
+      this.renderer.listen(newPiece, 'touchcancel', (ev) => this.handleTouchEnd(ev));
+
       this.renderer.listen(newPiece, 'mouseenter', (ev) => this.onPieceMouseEnter(ev.target, ev));
       this.renderer.listen(newPiece, 'mouseleave', () => this.onPieceMouseLeave());
       this.renderer.setAttribute(newPiece, 'draggable', 'true');
@@ -194,7 +199,7 @@ export class DashboardComponent implements OnInit {
 
       const pieceTranslation = this.translatePieceType(move.piece.split(' ')[1]);
 
-      moveText.textContent = `${index + 1}. ${colorTranslation} ${pieceTranslation} to ${move.end}` +
+      moveText.textContent = `${index + 1}. ${colorTranslation} ${pieceTranslation} na ${move.end}` +
         (move.captured ? ` (Zobratý ${this.translatePieceType(move.captured.split(' ')[1])})` : '');
       historyDiv.appendChild(moveText);
     });
@@ -409,4 +414,150 @@ promotePawn(pawn: HTMLElement, color: string): void {
       });
     }
   }
+
+  // Add these properties to your component
+  private touchStartTime: number = 0;
+  private longPressThreshold: number = 300; // milliseconds
+  private touchStartTimeout: any = null;
+  private isLongPress: boolean = false;
+  private touchStartX: number = 0;
+  private touchStartY: number = 0;
+  private draggedPiece: HTMLElement | null = null;
+  private draggedPieceStartSquare: HTMLElement | null = null;
+
+  // Replace your existing touch handlers with these:
+  handleTouchStart(ev: TouchEvent): void {
+    ev.preventDefault();
+    this.touchStartTime = Date.now();
+    const touch = ev.touches[0];
+
+    const piece = ev.target as HTMLElement;
+    const actualPiece = piece.classList.contains('piece') ? piece : piece.parentElement as HTMLElement;
+
+    const pieceColor = actualPiece.getAttribute('color');
+    if ((this.isWhiteTurn && pieceColor === 'white') || (!this.isWhiteTurn && pieceColor === 'black')) {
+      this.touchStartTimeout = setTimeout(() => {
+        this.isLongPress = true;
+        this.startDragging(actualPiece, touch.clientX, touch.clientY);
+      }, this.longPressThreshold);
+    }
+  }
+
+  handleTouchMove(ev: TouchEvent): void {
+    ev.preventDefault();
+    if (!this.draggedPiece || !this.isLongPress) return;
+
+    const touch = ev.touches[0];
+    this.updatePiecePosition(this.draggedPiece, touch.clientX, touch.clientY);
+
+    // Highlight potential drop squares
+    const hoveredSquare = this.chessService.getSquareFromCoordinates(touch.clientX, touch.clientY);
+    if (hoveredSquare) {
+      this.chessService.clearHighlights();
+      this.chessService.highlightSquare(hoveredSquare);
+    }
+  }
+
+  handleTouchEnd(ev: TouchEvent): void {
+    ev.preventDefault();
+    clearTimeout(this.touchStartTimeout);
+
+    if (!this.draggedPiece) {
+      // This was a tap, not a drag
+      if (Date.now() - this.touchStartTime < this.longPressThreshold) {
+        const touch = ev.changedTouches[0];
+        const tappedElement = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement;
+        const piece = tappedElement.classList.contains('piece') ? tappedElement : tappedElement.closest('.piece');
+
+        if (piece) {
+          this.onPieceMouseEnter(piece as HTMLElement, null as any);
+        }
+      }
+      return;
+    }
+
+    const touch = ev.changedTouches[0];
+    const endSquare = this.chessService.getSquareFromCoordinates(touch.clientX, touch.clientY);
+
+    if (endSquare && this.draggedPieceStartSquare) {
+      if (this.chessService.isMoveValid(this.draggedPiece, this.draggedPieceStartSquare, endSquare)) {
+        this.dropPiece(this.draggedPiece, this.draggedPieceStartSquare, endSquare);
+      } else {
+        // Return to original position if invalid move
+        this.draggedPieceStartSquare.appendChild(this.draggedPiece);
+      }
+    } else if (this.draggedPieceStartSquare) {
+      // Return to original position if no valid drop
+      this.draggedPieceStartSquare.appendChild(this.draggedPiece);
+    }
+
+    this.chessService.resetPieceStyles(this.draggedPiece);
+    this.chessService.clearHighlights();
+
+    this.draggedPiece = null;
+    this.draggedPieceStartSquare = null;
+    this.isLongPress = false;
+  }
+
+  private startDragging(piece: HTMLElement, clientX: number, clientY: number): void {
+    this.draggedPiece = piece;
+    this.draggedPieceStartSquare = piece.parentElement as HTMLElement;
+
+    // Visual feedback for dragging
+    piece.style.position = 'fixed';
+    piece.style.zIndex = '1000';
+    piece.style.width = '15vw';
+    piece.style.height = '15vw';
+    piece.style.pointerEvents = 'none';
+    piece.style.transform = 'translate(-50%, -50%) scale(1.5)';
+
+    this.updatePiecePosition(piece, clientX, clientY);
+    this.onPieceMouseEnter(piece, null as any);
+  }
+
+  private updatePiecePosition(piece: HTMLElement, clientX: number, clientY: number): void {
+    piece.style.left = `${clientX}px`;
+    piece.style.top = `${clientY}px`;
+  }
+
+  private dropPiece(piece: HTMLElement, startSquare: HTMLElement, endSquare: HTMLElement): void {
+    const capturedPiece = endSquare.querySelector('.piece');
+    if (capturedPiece) {
+      endSquare.removeChild(capturedPiece);
+    }
+
+    // Reset styles before appending
+    this.chessService.resetPieceStyles(piece);
+    endSquare.appendChild(piece);
+
+    // Update game state
+    const move = {
+      piece: piece.className,
+      color: piece.getAttribute('color'),
+      start: startSquare.id,
+      end: endSquare.id,
+      captured: capturedPiece ? capturedPiece.getAttribute('class') : null,
+    };
+    this.moveHistory.push(move);
+    this.updateMoveHistoryDisplay();
+
+    // Check for pawn promotion
+    if (piece.classList.contains('pawn') && (endSquare.id[1] === '1' || endSquare.id[1] === '8')) {
+      const color = piece.getAttribute('color');
+      this.promotePawn(piece, color!);
+    }
+
+    this.isWhiteTurn = !this.isWhiteTurn;
+
+    // Check for check/checkmate
+    const currentPlayerColor = this.isWhiteTurn ? 'white' : 'black';
+    document.querySelectorAll('.square').forEach(sq => sq.classList.remove('in-check'));
+
+    if (this.chessService.isCheckmate(currentPlayerColor)) {
+      this.showCheckmateModal(currentPlayerColor === 'white' ? 'Black' : 'White');
+    } else if (this.chessService.isCheck(currentPlayerColor)) {
+      console.log(`${currentPlayerColor} is in check.`);
+    }
+  }
+
 }

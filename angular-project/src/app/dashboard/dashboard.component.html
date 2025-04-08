@@ -243,12 +243,12 @@
     <button class="load" id="loadButton">Načítanie hry</button>
 
     <div class="openings-controls">
-      <button (click)="toggleOpeningsPanel()">SHOW OPENINGS</button>
+      <button (click)="toggleOpeningsPanel()">Ukáž otvorenia</button>
     </div>
 
     <div class="openings-panel" *ngIf="showOpeningsPanel">
       <div class="panel-header">
-        <h3>Chess Openings</h3>
+        <h3>Šachové otvorenia</h3>
         <button class="close-btn" (click)="toggleOpeningsPanel()">×</button>
       </div>
       <div class="openings-list">
@@ -269,9 +269,9 @@
 
   <div id="checkmateModal" class="checkmate-modal" style="display: none;">
     <div class="checkmate-content">
-      <h2>Checkmate!</h2>
+      <h2>Šachmat!</h2>
       <p id="checkmateWinnerText"></p>
-      <button id="newGameButton">New Game</button>
+      <button id="newGameButton">Nová hra</button>
     </div>
   </div>
 

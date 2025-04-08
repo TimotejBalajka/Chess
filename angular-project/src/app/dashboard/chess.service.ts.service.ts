@@ -357,5 +357,27 @@ export class ChessService {
       ev.dataTransfer?.setDragImage(dragImg, dragImg.width / 2, dragImg.height / 2);
     }
   }
+
+  // Add to ChessService
+  getSquareFromCoordinates(clientX: number, clientY: number): HTMLElement | null {
+    const elements = document.elementsFromPoint(clientX, clientY);
+    for (const element of elements) {
+      if (element.classList.contains('square')) {
+        return element as HTMLElement;
+      }
+    }
+    return null;
+  }
+
+  resetPieceStyles(piece: HTMLElement): void {
+    piece.style.position = '';
+    piece.style.zIndex = '';
+    piece.style.width = '';
+    piece.style.height = '';
+    piece.style.pointerEvents = '';
+    piece.style.transform = '';
+    piece.style.left = '';
+    piece.style.top = '';
+  }
 }
 
