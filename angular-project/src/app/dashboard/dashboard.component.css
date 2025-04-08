@@ -140,12 +140,12 @@ body {
   text-transform: uppercase;
   font-size: 14px;
   transition: all 0.5s ease;
-  width: 200px;
+  width: 220px;
   text-align: center;
 }
 
   .restart:hover, .save:hover, .load:hover {
-    letter-spacing: 3px;
+    letter-spacing: 1px;
     background-color: rgb(181, 136, 99);
     color: hsl(0, 0%, 100%);
     box-shadow: rgb(181 136 99) 0px 7px 29px 0px;
@@ -259,13 +259,12 @@ body {
   text-transform: uppercase;
   font-size: 14px;
   transition: all 0.5s ease;
-  width: 200px;
+  width: 220px;
   text-align: center;
-  margin-top: 10px;
 }
 
 .openings-controls button:hover {
-  letter-spacing: 3px;
+  letter-spacing: 1px;
   background-color: rgb(181, 136, 99);
   color: hsl(0, 0%, 100%);
   box-shadow: rgb(181 136 99) 0px 7px 29px 0px;
