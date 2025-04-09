@@ -31,7 +31,6 @@ body {
   padding: 0 20px;
 }
 
-/* Header */
 header {
   background: rgba(255, 255, 255, 0.9);
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
@@ -97,7 +96,6 @@ header {
       width: 100%;
     }
 
-/* Hero Section */
 .hero {
   background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
   padding: 4rem 2rem;
@@ -143,19 +141,19 @@ header {
 .hero-image {
   flex: 1;
   position: relative;
-  min-height: 300px; /* Reduced from 400px for better mobile display */
+  min-height: 300px;
   width: 100%;
-  max-width: 600px; /* Adjust as needed */
+  max-width: 600px;
   margin: 0 auto;
 }
 
   .hero-image img {
     width: 100%;
     height: auto;
-    max-width: 100%; /* Ensures it doesn't exceed container width */
+    max-width: 100%;
     border-radius: 12px;
     box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-    object-fit: contain; /* Ensures full image is visible */
+    object-fit: contain;
   }
 
 .chess-pieces {
@@ -169,8 +167,8 @@ header {
 
 .floating-piece {
   position: absolute;
-  width: 15%; /* Using percentage instead of fixed px */
-  max-width: 80px; /* Maximum size */
+  width: 15%;
+  max-width: 80px;
   height: auto;
   animation: float 6s ease-in-out infinite;
 }
@@ -197,7 +195,6 @@ header {
   }
 }
 
-/* Buttons */
 .btn-primary {
   background: linear-gradient(135deg, #4361ee, #3a0ca3);
   color: white;
@@ -237,7 +234,6 @@ header {
     color: white;
   }
 
-/* Responsive Design */
 @media (max-width: 768px) {
   .hero-container {
     flex-direction: column;
@@ -266,7 +262,6 @@ header {
   }
 }
 
-/* Game Modes */
 .game-modes {
   padding: 60px 0;
 }
@@ -355,7 +350,6 @@ header {
   line-height: 1.6;
 }
 
-/* Buttons */
 .btn {
   display: inline-block;
   padding: 12px 30px;
@@ -396,7 +390,6 @@ header {
   text-align: center;
 }
 
-/* Responsive Design */
 @media (max-width: 992px) {
   .hero {
     flex-direction: column;
@@ -451,7 +444,7 @@ header {
     }
 
   .floating-piece {
-    width: 12%; /* Smaller on mobile */
+    width: 12%;
   }
 }
 

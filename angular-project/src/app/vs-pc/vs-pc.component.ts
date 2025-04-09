@@ -65,16 +65,12 @@ export class VsPcComponent implements OnInit {
   }
 
   setupPieces(): void {
-    // First, clear existing references
     this.pieces = this.el.nativeElement.querySelectorAll('.piece');
 
-    // Set up new pieces with fresh event listeners
     this.pieces.forEach((piece: any) => {
-      // Remove any existing event listeners by cloning the element
       const newPiece = piece.cloneNode(true);
       piece.parentNode.replaceChild(newPiece, piece);
 
-      // Set up new listeners on the fresh element
       this.renderer.listen(newPiece, 'dragstart', (ev) => this.drag(ev));
       this.renderer.listen(newPiece, 'touchstart', (ev) => this.handleTouchStart(ev));
       this.renderer.listen(newPiece, 'touchmove', (ev) => this.handleTouchMove(ev));
@@ -87,7 +83,6 @@ export class VsPcComponent implements OnInit {
       newPiece.id = newPiece.className.split(' ')[1] + newPiece.parentElement.id;
     });
 
-    // Set up images (prevent them from being draggable)
     this.piecesImages = this.el.nativeElement.querySelectorAll('.piece img');
     this.piecesImages.forEach((img: any) => {
       this.renderer.setAttribute(img, 'draggable', 'false');
@@ -103,11 +98,9 @@ export class VsPcComponent implements OnInit {
     this.currentlyDragging = true;
     const piece = ev.target as HTMLElement;
 
-    // Handle case where img is dragged instead of piece div
     const actualPiece = piece.classList.contains('piece') ? piece : piece.parentElement as HTMLElement;
 
     const pieceColor = actualPiece.getAttribute('color');
-    // Only allow dragging white pieces when it's white's turn
     if (this.isWhiteTurn && pieceColor === 'white') {
       this.chessService.setDragImage(ev, actualPiece);
       ev.dataTransfer?.setData('text/plain', actualPiece.id);
@@ -116,7 +109,6 @@ export class VsPcComponent implements OnInit {
         ev.dataTransfer?.setData('startSquare', startSquare);
       }
     } else {
-      // Prevent dragging for black pieces or when it's not white's turn
       ev.preventDefault();
     }
   }
@@ -124,14 +116,13 @@ export class VsPcComponent implements OnInit {
   drop(ev: DragEvent): void {
     this.currentlyDragging = false;
     ev.preventDefault();
-    this.chessService.clearHighlights(); // Clear highlights when dropping
+    this.chessService.clearHighlights();
 
     const pieceId = ev.dataTransfer?.getData('text/plain');
     const piece = document.getElementById(pieceId!);
     const startSquare = document.getElementById(ev.dataTransfer?.getData('startSquare')!);
     const endSquare = ev.currentTarget as HTMLElement;
 
-    // Additional check to ensure only white pieces are moved by player
     if (piece?.getAttribute('color') !== 'white') {
       console.log('Only white pieces can be moved by player');
       return;
@@ -151,7 +142,9 @@ export class VsPcComponent implements OnInit {
     if (!this.isWhiteTurn) {
       this.makeBotMove();
     }
-  } 
+  }
+
+
   executeMove(piece: HTMLElement, startSquare: HTMLElement, endSquare: HTMLElement, promotionType?: string): void {
     const capturedPiece = endSquare.querySelector('.piece');
     const capturedPieceType = capturedPiece ? capturedPiece.getAttribute('class') : null;
@@ -174,11 +167,9 @@ export class VsPcComponent implements OnInit {
 
     if (piece!.classList.contains('pawn') && (endSquare.id[1] === '1' || endSquare.id[1] === '8')) {
       const color = piece!.getAttribute('color');
-      if (color === 'black') { // Bot's turn
-        // Automatically promote to queen (or other piece based on your logic)
-        this.promotePawn(piece!, color!, 'queen'); // Default to queen
+      if (color === 'black') {
+        this.promotePawn(piece!, color!, 'queen');
       } else {
-        // Human player - show promotion modal
         this.promotePawn(piece!, color!);
       }
     }
@@ -192,28 +183,6 @@ export class VsPcComponent implements OnInit {
       console.log(`${currentPlayerColor} je v šachu.`);
     } else {
       console.log('Tah vykonaný.');
-    }
-  }
-
-  showCheckmateModal(winner: string): void {
-    const modal = document.getElementById('checkmateModal');
-    const winnerText = document.getElementById('checkmateWinnerText');
-    const newGameButton = document.getElementById('newGameButton');
-    const closeModalButton = document.getElementById('closeModalButton');
-
-    if (modal && winnerText && newGameButton && closeModalButton) {
-      winnerText.textContent = `${winner} vyhral hru!`;
-      modal.style.display = 'flex';
-
-      // Add event listeners for buttons
-      newGameButton.onclick = () => {
-        modal.style.display = 'none';
-        this.resetBoard();
-      };
-
-      closeModalButton.onclick = () => {
-        modal.style.display = 'none';
-      };
     }
   }
 
@@ -263,7 +232,6 @@ export class VsPcComponent implements OnInit {
       setTimeout(() => {
         let promotionType: string | undefined;
         if (promotion) {
-          // Convert Stockfish promotion character to piece type
           switch (promotion.toLowerCase()) {
             case 'q': promotionType = 'queen'; break;
             case 'r': promotionType = 'rook'; break;
@@ -284,17 +252,16 @@ export class VsPcComponent implements OnInit {
     const botMove = this.chessService.getRandomValidMove('black');
     if (botMove) {
       setTimeout(() => {
-        // Check if this is a promotion move
         let promotionType: string | undefined;
         if (botMove.piece.classList.contains('pawn') &&
           (botMove.endSquare.id[1] === '1' || botMove.endSquare.id[1] === '8')) {
-          // Default to queen for random moves
           promotionType = 'queen';
         }
         this.executeMove(botMove.piece, botMove.startSquare, botMove.endSquare, promotionType);
       }, 500);
     }
   }
+
   getCurrentFEN(): string {
     let fen = '';
     for (let row = 0; row < 8; row++) {
@@ -323,6 +290,27 @@ export class VsPcComponent implements OnInit {
     }
     fen += ` ${this.isWhiteTurn ? 'w' : 'b'} - - 0 1`;
     return fen;
+  }
+
+  showCheckmateModal(winner: string): void {
+    const modal = document.getElementById('checkmateModal');
+    const winnerText = document.getElementById('checkmateWinnerText');
+    const newGameButton = document.getElementById('newGameButton');
+    const closeModalButton = document.getElementById('closeModalButton');
+
+    if (modal && winnerText && newGameButton && closeModalButton) {
+      winnerText.textContent = `${winner} vyhral hru!`;
+      modal.style.display = 'flex';
+
+      newGameButton.onclick = () => {
+        modal.style.display = 'none';
+        this.resetBoard();
+      };
+
+      closeModalButton.onclick = () => {
+        modal.style.display = 'none';
+      };
+    }
   }
 
   updateMoveHistoryDisplay(): void {
@@ -371,10 +359,8 @@ export class VsPcComponent implements OnInit {
   }
 
   resetBoard(): void {
-    // Clear game state
     localStorage.removeItem('chessGameState');
 
-    // Remove all pieces while preserving coordinates
     this.boardSquares.forEach((square: any) => {
       const piece = square.querySelector('.piece');
       if (piece) {
@@ -383,7 +369,6 @@ export class VsPcComponent implements OnInit {
       square.classList.remove('in-check');
     });
 
-    // Create fresh pieces
     const initialSetup = {
       a1: 'whiteRook', a2: 'whitePawn', a7: 'blackPawn', a8: 'blackRook',
       b1: 'whiteKnight', b2: 'whitePawn', b7: 'blackPawn', b8: 'blackKnight',
@@ -413,15 +398,13 @@ export class VsPcComponent implements OnInit {
       }
     }
 
-    // Reset game state
     this.isWhiteTurn = true;
     this.moveHistory = [];
     this.updateMoveHistoryDisplay();
 
-    // Force Angular to recognize new elements
     setTimeout(() => {
       this.setupPieces();
-      this.setupBoardSquares(); // This will reattach all event listeners
+      this.setupBoardSquares();
     }, 0);
   }
 
@@ -457,7 +440,6 @@ export class VsPcComponent implements OnInit {
     if (savedGameState && savedMoveHistory) {
       const gameState = JSON.parse(savedGameState);
 
-      // First, remove only the pieces, not the entire square content
       this.boardSquares.forEach((square: any) => {
         const piece = square.querySelector('.piece');
         if (piece) {
@@ -465,12 +447,11 @@ export class VsPcComponent implements OnInit {
         }
       });
 
-      // Then recreate and place the pieces
       gameState.pieces.forEach((pieceInfo: any) => {
         const square = document.getElementById(pieceInfo.squareId);
         if (square) {
           const pieceDiv = document.createElement('div');
-          pieceDiv.className = `piece ${pieceInfo.type}`;
+          piecgeteDiv.className = `piece ${pieceInfo.type}`;
           pieceDiv.setAttribute('color', pieceInfo.color);
           pieceDiv.setAttribute('draggable', 'true');
           pieceDiv.id = pieceInfo.id;
@@ -481,7 +462,6 @@ export class VsPcComponent implements OnInit {
 
           pieceDiv.appendChild(pieceImg);
 
-          // Insert the piece before any coordinate elements
           const firstCoordinate = square.querySelector('.coordinate');
           if (firstCoordinate) {
             square.insertBefore(pieceDiv, firstCoordinate);
@@ -497,7 +477,6 @@ export class VsPcComponent implements OnInit {
       this.isWhiteTurn = gameState.turn;
       console.log('Game loaded!');
 
-      // Reinitialize pieces and board
       setTimeout(() => {
         this.setupPieces();
         this.setupBoardSquares();
@@ -509,7 +488,6 @@ export class VsPcComponent implements OnInit {
 
   promotePawn(pawn: HTMLElement, color: string, promotionType?: string): void {
     if (promotionType) {
-      // Automatic promotion for bot
       const newPieceImage = `assets/${color}${promotionType.charAt(0).toUpperCase() + promotionType.slice(1)}.png`;
       const pawnImg = pawn.querySelector('img');
       if (pawnImg) {
@@ -526,7 +504,6 @@ export class VsPcComponent implements OnInit {
       return;
     }
 
-    // Human player - show promotion modal
     const modal = this.renderer.createElement('div');
     this.renderer.addClass(modal, 'promotion-modal');
 
@@ -558,23 +535,18 @@ export class VsPcComponent implements OnInit {
   }
 
   onPieceMouseLeave(): void {
-    // Only clear highlights if not currently dragging
     if (!this.currentlyDragging) {
       this.chessService.clearHighlights();
     }
   }
 
-  // Update the mouse enter handler
   onPieceMouseEnter(piece: HTMLElement, event: MouseEvent): void {
-    // Only highlight white pieces when it's white's turn
     if (this.isWhiteTurn && piece.getAttribute('color') === 'white') {
       const square = piece.parentElement as HTMLElement;
       this.chessService.clearHighlights();
 
-      // Highlight the current square
       this.chessService.highlightSquare(square);
 
-      // Highlight all legal moves
       const legalMoves = this.chessService.getLegalMoves(piece, square);
       legalMoves.forEach(move => {
         const squareId = String.fromCharCode(97 + move.x) + (8 - move.y);
@@ -585,6 +557,7 @@ export class VsPcComponent implements OnInit {
       });
     }
   }
+
   async getEngineMove(fen: string): Promise<any> {
     try {
       return await this.StockfishService.getBestMove(fen).toPromise();
@@ -595,7 +568,6 @@ export class VsPcComponent implements OnInit {
   }
 
 
-  // Add these properties to your component
   private touchActive: boolean = false;
   private touchStartX: number = 0;
   private touchStartY: number = 0;
@@ -603,7 +575,6 @@ export class VsPcComponent implements OnInit {
   private draggedPieceStartSquare: HTMLElement | null = null;
   private validDropSquares: HTMLElement[] = [];
 
-  // Replace your touch handlers with these
   handleTouchStart(ev: TouchEvent): void {
     if (!this.isWhiteTurn) return;
 
@@ -620,10 +591,8 @@ export class VsPcComponent implements OnInit {
       this.draggedPiece = piece as HTMLElement;
       this.draggedPieceStartSquare = this.draggedPiece.parentElement as HTMLElement;
 
-      // Highlight valid moves immediately
       this.showValidMoves(this.draggedPiece, this.draggedPieceStartSquare);
 
-      // Set up dragging visuals
       this.setupDragVisuals(this.draggedPiece, touch.clientX, touch.clientY);
     }
   }
@@ -654,7 +623,6 @@ export class VsPcComponent implements OnInit {
     this.cleanUpAfterTouch();
   }
 
-  // Helper methods
   private showValidMoves(piece: HTMLElement, startSquare: HTMLElement): void {
     this.chessService.clearHighlights();
     this.validDropSquares = [];
@@ -739,11 +707,3 @@ export class VsPcComponent implements OnInit {
   }
 }
 
-
-interface StockfishResponse {
-  success: boolean;
-  evaluation?: number;
-  mate?: number | null;
-  bestmove?: string;
-  continuation?: string;
-}

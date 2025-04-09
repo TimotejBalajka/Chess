@@ -183,6 +183,7 @@ export class DashboardComponent implements OnInit {
       };
     }
   }
+
   updateMoveHistoryDisplay(): void {
     const historyDiv = this.el.nativeElement.querySelector('#moveHistory');
     historyDiv.innerHTML = '';
@@ -358,6 +359,7 @@ export class DashboardComponent implements OnInit {
       console.log('No saved game found.');
     }
   }
+
 promotePawn(pawn: HTMLElement, color: string): void {
   const modal = this.renderer.createElement('div');
   this.renderer.addClass(modal, 'promotion-modal');
@@ -415,17 +417,13 @@ promotePawn(pawn: HTMLElement, color: string): void {
     }
   }
 
-  // Add these properties to your component
   private touchStartTime: number = 0;
-  private longPressThreshold: number = 300; // milliseconds
+  private longPressThreshold: number = 300;
   private touchStartTimeout: any = null;
   private isLongPress: boolean = false;
-  private touchStartX: number = 0;
-  private touchStartY: number = 0;
   private draggedPiece: HTMLElement | null = null;
   private draggedPieceStartSquare: HTMLElement | null = null;
 
-  // Replace your existing touch handlers with these:
   handleTouchStart(ev: TouchEvent): void {
     ev.preventDefault();
     this.touchStartTime = Date.now();
@@ -450,7 +448,6 @@ promotePawn(pawn: HTMLElement, color: string): void {
     const touch = ev.touches[0];
     this.updatePiecePosition(this.draggedPiece, touch.clientX, touch.clientY);
 
-    // Highlight potential drop squares
     const hoveredSquare = this.chessService.getSquareFromCoordinates(touch.clientX, touch.clientY);
     if (hoveredSquare) {
       this.chessService.clearHighlights();
@@ -463,7 +460,6 @@ promotePawn(pawn: HTMLElement, color: string): void {
     clearTimeout(this.touchStartTimeout);
 
     if (!this.draggedPiece) {
-      // This was a tap, not a drag
       if (Date.now() - this.touchStartTime < this.longPressThreshold) {
         const touch = ev.changedTouches[0];
         const tappedElement = document.elementFromPoint(touch.clientX, touch.clientY) as HTMLElement;
@@ -483,11 +479,9 @@ promotePawn(pawn: HTMLElement, color: string): void {
       if (this.chessService.isMoveValid(this.draggedPiece, this.draggedPieceStartSquare, endSquare)) {
         this.dropPiece(this.draggedPiece, this.draggedPieceStartSquare, endSquare);
       } else {
-        // Return to original position if invalid move
         this.draggedPieceStartSquare.appendChild(this.draggedPiece);
       }
     } else if (this.draggedPieceStartSquare) {
-      // Return to original position if no valid drop
       this.draggedPieceStartSquare.appendChild(this.draggedPiece);
     }
 
@@ -503,7 +497,6 @@ promotePawn(pawn: HTMLElement, color: string): void {
     this.draggedPiece = piece;
     this.draggedPieceStartSquare = piece.parentElement as HTMLElement;
 
-    // Visual feedback for dragging
     piece.style.position = 'fixed';
     piece.style.zIndex = '1000';
     piece.style.width = '15vw';
@@ -526,11 +519,9 @@ promotePawn(pawn: HTMLElement, color: string): void {
       endSquare.removeChild(capturedPiece);
     }
 
-    // Reset styles before appending
     this.chessService.resetPieceStyles(piece);
     endSquare.appendChild(piece);
 
-    // Update game state
     const move = {
       piece: piece.className,
       color: piece.getAttribute('color'),
@@ -541,7 +532,6 @@ promotePawn(pawn: HTMLElement, color: string): void {
     this.moveHistory.push(move);
     this.updateMoveHistoryDisplay();
 
-    // Check for pawn promotion
     if (piece.classList.contains('pawn') && (endSquare.id[1] === '1' || endSquare.id[1] === '8')) {
       const color = piece.getAttribute('color');
       this.promotePawn(piece, color!);
@@ -549,7 +539,6 @@ promotePawn(pawn: HTMLElement, color: string): void {
 
     this.isWhiteTurn = !this.isWhiteTurn;
 
-    // Check for check/checkmate
     const currentPlayerColor = this.isWhiteTurn ? 'white' : 'black';
     document.querySelectorAll('.square').forEach(sq => sq.classList.remove('in-check'));
 

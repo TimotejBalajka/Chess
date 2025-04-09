@@ -180,11 +180,11 @@ export class ChessService {
       case 'piece pawn':
         const direction = piece.getAttribute('color') === 'white' ? -1 : 1;
         const targetSquare = document.getElementById(String.fromCharCode(97 + endX) + (8 - endY));
-        if (!targetSquare) return false; // Ensure the target square exists
+        if (!targetSquare) return false;
         return (
           Math.abs(endX - startX) === 1 &&
           endY === startY + direction &&
-          this.isSquareOccupied(targetSquare) !== piece.getAttribute('color') // Compare strings correctly
+          this.isSquareOccupied(targetSquare) !== piece.getAttribute('color')
         );
       case 'piece rook':
         return startX === endX || startY === endY ? this.isRookPathClear(startX, startY, endX, endY) : false;
@@ -208,6 +208,7 @@ export class ChessService {
         return false;
     }
   }
+
   isCheckmate(currentPlayerColor: string): boolean {
     const kingInCheck = this.isCheck(currentPlayerColor);
     if (!kingInCheck) return false;
@@ -287,12 +288,10 @@ export class ChessService {
     return true;
   }
 
-  // Add these properties to your ChessService
   private lightSquareHighlight = '#a9a9a9';
   private darkSquareHighlight = '#696969';
   private originalSquareColors: Map<string, string> = new Map();
 
-  // Add these methods to your ChessService
   clearHighlights(): void {
     const squares = document.querySelectorAll('.square');
     squares.forEach(square => {
@@ -302,18 +301,15 @@ export class ChessService {
       if (originalColor) {
         squareElement.style.background = originalColor;
       } else {
-        // Reset to default colors if no original color was stored
         squareElement.style.background = '';
       }
     });
     this.originalSquareColors.clear();
   }
 
-  // Modify highlightSquare to store original colors
   highlightSquare(square: HTMLElement): void {
     const squareId = square.id;
 
-    // Only store the original color if we haven't already
     if (!this.originalSquareColors.has(squareId)) {
       const currentColor = square.style.background;
       this.originalSquareColors.set(squareId, currentColor || '');
@@ -331,12 +327,10 @@ export class ChessService {
     const startX = square.id.charCodeAt(0) - 97;
     const startY = 8 - parseInt(square.id[1]);
 
-    // Check all possible squares
     for (let x = 0; x < 8; x++) {
       for (let y = 0; y < 8; y++) {
         const endSquare = document.getElementById(String.fromCharCode(97 + x) + (8 - y));
         if (endSquare) {
-          // Temporarily move the piece to check if the move is valid
           if (this.isMoveValid(piece, square, endSquare)) {
             legalMoves.push({ x, y });
           }
@@ -347,18 +341,15 @@ export class ChessService {
     return legalMoves;
   }
 
-  // Add to ChessService
   setDragImage(ev: DragEvent, piece: HTMLElement): void {
     const img = piece.querySelector('img');
     if (img) {
-      // Create a temporary drag image element
       const dragImg = new Image();
       dragImg.src = img.getAttribute('src') || '';
       ev.dataTransfer?.setDragImage(dragImg, dragImg.width / 2, dragImg.height / 2);
     }
   }
 
-  // Add to ChessService
   getSquareFromCoordinates(clientX: number, clientY: number): HTMLElement | null {
     const elements = document.elementsFromPoint(clientX, clientY);
     for (const element of elements) {
